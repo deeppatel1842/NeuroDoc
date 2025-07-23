@@ -1,0 +1,15 @@
+# Docker ignore file for NeuroDoc
+.git
+.gitignore
+.venv
+.env
+*.pyc
+__pycache__
+.pytest_cache
+.coverage
+*.log
+.DS_Store
+Thumbs.db
+README.md
+docs/
+*.md
