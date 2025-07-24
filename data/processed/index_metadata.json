@@ -1,0 +1,18 @@
+{
+  "total_documents": 10,
+  "total_chunks": 1278,
+  "embedding_dimension": 384,
+  "processed_files": [
+    "1908.10084_Sentence-BERT_ Sentence Embeddings using Siamese BERT-Networks.pdf",
+    "2002.08909_REALM_ Retrieval-Augmented Language Model Pre-Training.pdf",
+    "2005.11401_Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks.pdf",
+    "2005.14165_Language Models are Few-Shot Learners.pdf",
+    "2010.02666_Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation.pdf",
+    "2201.10005_Text and Code Embeddings by Contrastive Pre-Training.pdf",
+    "2203.02155_Training Language Models to Follow Instructions with Human Feedback.pdf",
+    "2302.00083_In-Context Retrieval-Augmented Language Models.pdf",
+    "2302.13971_LLaMA_ Open and Efficient Foundation Language Models.pdf",
+    "2310.11511_Self-RAG_ Learning to Retrieve_ Generate_ and Critique through Self-Reflection.pdf"
+  ],
+  "index_version": "1.0"
+}

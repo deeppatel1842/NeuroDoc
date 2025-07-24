@@ -1,0 +1,20 @@
+{
+  "document_id": "c37d6c8f-2b6f-40c8-a0dd-923080c9557a",
+  "filename": "LLM_2.pdf",
+  "session_id": "730dffc3-6e43-412d-ad8f-fd7a0a7be9e8",
+  "content_hash": "c1984bb50a5b90fddb895fdc3a0f72e5bc977148c9f63ef6040cbe7a3e1f0d98",
+  "text_hash": "8bcfe4db057c75d3bf458afce3914418eeb40d9b884fc649081b9603ce1824f4",
+  "file_size": 1797405,
+  "text_length": 181503,
+  "chunk_count": 250,
+  "processed_at": "2025-07-23T21:34:47.921640",
+  "processing_config": {
+    "chunk_size": 1000,
+    "chunk_overlap": 200
+  },
+  "extraction_metadata": {
+    "word_count": 29207,
+    "character_count": 181503,
+    "estimated_pages": 90
+  }
+}

@@ -1,0 +1,131 @@
+[
+  {
+    "arxiv_id": "2005.11401",
+    "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+    "authors": [
+      "Patrick Lewis",
+      "Ethan Perez",
+      "Aleksandra Piktus",
+      "et al."
+    ],
+    "category": "rag_fundamentals",
+    "filepath": "C:\\Users\\Kashyap\\Documents\\Deep\\NeuroDoc\\data\\raw\\2005.11401_Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks.pdf",
+    "filename": "2005.11401_Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks.pdf"
+  },
+  {
+    "arxiv_id": "2002.08909",
+    "title": "REALM: Retrieval-Augmented Language Model Pre-Training",
+    "authors": [
+      "Kelvin Guu",
+      "Kenton Lee",
+      "Zora Tung",
+      "Panupong Pasupat",
+      "Ming-Wei Chang"
+    ],
+    "category": "rag_fundamentals",
+    "filepath": "C:\\Users\\Kashyap\\Documents\\Deep\\NeuroDoc\\data\\raw\\2002.08909_REALM_ Retrieval-Augmented Language Model Pre-Training.pdf",
+    "filename": "2002.08909_REALM_ Retrieval-Augmented Language Model Pre-Training.pdf"
+  },
+  {
+    "arxiv_id": "2302.00083",
+    "title": "In-Context Retrieval-Augmented Language Models",
+    "authors": [
+      "Ori Ram",
+      "Yoav Levine",
+      "Itay Dalmedigos",
+      "et al."
+    ],
+    "category": "rag_fundamentals",
+    "filepath": "C:\\Users\\Kashyap\\Documents\\Deep\\NeuroDoc\\data\\raw\\2302.00083_In-Context Retrieval-Augmented Language Models.pdf",
+    "filename": "2302.00083_In-Context Retrieval-Augmented Language Models.pdf"
+  },
+  {
+    "arxiv_id": "2005.14165",
+    "title": "Language Models are Few-Shot Learners",
+    "authors": [
+      "Tom B. Brown",
+      "Benjamin Mann",
+      "Nick Ryder",
+      "et al."
+    ],
+    "category": "llm_architecture",
+    "filepath": "C:\\Users\\Kashyap\\Documents\\Deep\\NeuroDoc\\data\\raw\\2005.14165_Language Models are Few-Shot Learners.pdf",
+    "filename": "2005.14165_Language Models are Few-Shot Learners.pdf"
+  },
+  {
+    "arxiv_id": "2203.02155",
+    "title": "Training Language Models to Follow Instructions with Human Feedback",
+    "authors": [
+      "Long Ouyang",
+      "Jeff Wu",
+      "Xu Jiang",
+      "et al."
+    ],
+    "category": "llm_architecture",
+    "filepath": "C:\\Users\\Kashyap\\Documents\\Deep\\NeuroDoc\\data\\raw\\2203.02155_Training Language Models to Follow Instructions with Human Feedback.pdf",
+    "filename": "2203.02155_Training Language Models to Follow Instructions with Human Feedback.pdf"
+  },
+  {
+    "arxiv_id": "2302.13971",
+    "title": "LLaMA: Open and Efficient Foundation Language Models",
+    "authors": [
+      "Hugo Touvron",
+      "Thibaut Lavril",
+      "Gautier Izacard",
+      "et al."
+    ],
+    "category": "llm_architecture",
+    "filepath": "C:\\Users\\Kashyap\\Documents\\Deep\\NeuroDoc\\data\\raw\\2302.13971_LLaMA_ Open and Efficient Foundation Language Models.pdf",
+    "filename": "2302.13971_LLaMA_ Open and Efficient Foundation Language Models.pdf"
+  },
+  {
+    "arxiv_id": "1908.10084",
+    "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+    "authors": [
+      "Nils Reimers",
+      "Iryna Gurevych"
+    ],
+    "category": "embeddings",
+    "filepath": "C:\\Users\\Kashyap\\Documents\\Deep\\NeuroDoc\\data\\raw\\1908.10084_Sentence-BERT_ Sentence Embeddings using Siamese BERT-Networks.pdf",
+    "filename": "1908.10084_Sentence-BERT_ Sentence Embeddings using Siamese BERT-Networks.pdf"
+  },
+  {
+    "arxiv_id": "2201.10005",
+    "title": "Text and Code Embeddings by Contrastive Pre-Training",
+    "authors": [
+      "Jianmo Ni",
+      "Gustavo Hernandez Abrego",
+      "Noah Constant",
+      "et al."
+    ],
+    "category": "embeddings",
+    "filepath": "C:\\Users\\Kashyap\\Documents\\Deep\\NeuroDoc\\data\\raw\\2201.10005_Text and Code Embeddings by Contrastive Pre-Training.pdf",
+    "filename": "2201.10005_Text and Code Embeddings by Contrastive Pre-Training.pdf"
+  },
+  {
+    "arxiv_id": "2010.02666",
+    "title": "Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "authors": [
+      "Sebastian Hofst\u00e4tter",
+      "Sophia Althammer",
+      "Michael Schr\u00f6der",
+      "et al."
+    ],
+    "category": "retrieval",
+    "filepath": "C:\\Users\\Kashyap\\Documents\\Deep\\NeuroDoc\\data\\raw\\2010.02666_Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation.pdf",
+    "filename": "2010.02666_Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation.pdf"
+  },
+  {
+    "arxiv_id": "2310.11511",
+    "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+    "authors": [
+      "Akari Asai",
+      "Zeqiu Wu",
+      "Yizhong Wang",
+      "et al."
+    ],
+    "category": "advanced_rag",
+    "filepath": "C:\\Users\\Kashyap\\Documents\\Deep\\NeuroDoc\\data\\raw\\2310.11511_Self-RAG_ Learning to Retrieve_ Generate_ and Critique through Self-Reflection.pdf",
+    "filename": "2310.11511_Self-RAG_ Learning to Retrieve_ Generate_ and Critique through Self-Reflection.pdf"
+  }
+]

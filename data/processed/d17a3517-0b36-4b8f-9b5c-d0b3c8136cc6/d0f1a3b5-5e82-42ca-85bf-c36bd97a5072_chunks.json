@@ -1,0 +1,29 @@
+[
+  {
+    "text": "Deep Patel Kirkland, WA, USA pateldeep1842 gmail. com LinkedIn GitHub  1 (425) 305-1382 Dear Hiring Manager, I am writing to express my interest in AI ML and LLM NLP roles within your organization. I recently completed my Master's in Computer Science from the University of Oklahoma (May 2025), with a focus on natural language processing, large language models (LLMs), and scalable Generative AI systems. Over the past year, I have led multiple hands-on projects across the GenAI stack from training and fine-tuning models to building end-to-end applications with vector retrieval, reranking, multimodal reasoning, and local deployment. Highlights include: •NeuroDoc : A multi-document RAG assistant supporting PDF upload, hybrid (FAISS   BM25) retrieval, reranking, and citation-grounded answers, with session memory and query history for contextual follow-up.",
+    "chunk_size": 862,
+    "word_count": 124,
+    "document_id": "d0f1a3b5-5e82-42ca-85bf-c36bd97a5072",
+    "chunk_index": 0,
+    "chunk_id": "d0f1a3b5-5e82-42ca-85bf-c36bd97a5072_chunk_0",
+    "created_at": "2025-07-23T21:44:40.166148"
+  },
+  {
+    "text": ": A multi-document RAG assistant supporting PDF upload, hybrid (FAISS   BM25) retrieval, reranking, and citation-grounded answers, with session memory and query history for contextual follow-up. •VisuaLens : A multimodal LLM system using LLaVA to enable image-grounded reasoning across dual-image inputs for tasks like UI analysis and chart interpretation. •LiteLLM : A local LLM deployment pipeline using LLaMA, LoRA adapters, and 4-bit quan- tization (bitsandbytes) to reduce memory usage by 60  and accelerate inference on edge devices. •EcoAssist : A personalized e-commerce chatbot powered by RAG   OpenAI API, enabling conversational product search across vectorized catalogs with memory, feedback loops, and retrieval-based generation. •ScoreVision : A predictive system for IPL matches using Scikit-learn XGBoost, enhanced with automated real-time match commentary via LLMs and historical pattern summarization.",
+    "chunk_size": 919,
+    "word_count": 124,
+    "document_id": "d0f1a3b5-5e82-42ca-85bf-c36bd97a5072",
+    "chunk_index": 1,
+    "chunk_id": "d0f1a3b5-5e82-42ca-85bf-c36bd97a5072_chunk_1",
+    "created_at": "2025-07-23T21:44:40.166148"
+  },
+  {
+    "text": "generation. •ScoreVision : A predictive system for IPL matches using Scikit-learn XGBoost, enhanced with automated real-time match commentary via LLMs and historical pattern summarization. •JetNav : An indoor autonomous navigation system using PyTorch and SLAM on NVIDIA JetBot, combining CNN-based path detection and quantized inference for real-time obstacle avoidance. These projects reflect my ability to combine deep learning research with practical deployment, using tools such as Hugging Face Transformers, LangChain, PyTorch, FastAPI, Docker, AWS Lambda, and PEFT. I also bring industry experience from Firenix Technologies, where I developed ML pipelines for surveillance and optimized CV models for edge deployment. I am excited about contributing to teams that value innovation, efficiency, and real-world AI impact. Thank you for considering my application. Sincerely, Deep Patel 1.",
+    "chunk_size": 894,
+    "word_count": 124,
+    "document_id": "d0f1a3b5-5e82-42ca-85bf-c36bd97a5072",
+    "chunk_index": 2,
+    "chunk_id": "d0f1a3b5-5e82-42ca-85bf-c36bd97a5072_chunk_2",
+    "created_at": "2025-07-23T21:44:40.166148"
+  }
+]

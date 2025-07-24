@@ -1,0 +1,20 @@
+{
+  "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+  "filename": "2201.10005_Text and Code Embeddings by Contrastive Pre-Training.pdf",
+  "session_id": "setup",
+  "content_hash": "6729e65ffcd13db793d5b14ac6eba00ed7271b2a7cb08751baa33b1a96ee1e5d",
+  "text_hash": "9d9221488b6437279bb097605b056ff14b70c85f466e72c0b1eb08a303fde914",
+  "file_size": 572619,
+  "text_length": 51147,
+  "chunk_count": 69,
+  "processed_at": "2025-07-22T23:16:30.207503",
+  "processing_config": {
+    "chunk_size": 1000,
+    "chunk_overlap": 200
+  },
+  "extraction_metadata": {
+    "word_count": 5255,
+    "character_count": 51147,
+    "estimated_pages": 25
+  }
+}

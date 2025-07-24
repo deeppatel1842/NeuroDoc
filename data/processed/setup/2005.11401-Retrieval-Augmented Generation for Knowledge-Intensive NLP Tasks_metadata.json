@@ -1,0 +1,20 @@
+{
+  "document_id": "2005.11401-Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+  "filename": "2005.11401_Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks.pdf",
+  "session_id": "setup",
+  "content_hash": "23e3249e9a1e75418d82efecab0ea8c4d033b89c93742f63208d47ce01f21233",
+  "text_hash": "3f165bfa19b8b2f352d714f274f3bc4a0a4f5627a813613d9195f84215841478",
+  "file_size": 885323,
+  "text_length": 69115,
+  "chunk_count": 97,
+  "processed_at": "2025-07-22T23:16:01.741199",
+  "processing_config": {
+    "chunk_size": 1000,
+    "chunk_overlap": 200
+  },
+  "extraction_metadata": {
+    "word_count": 10293,
+    "character_count": 69115,
+    "estimated_pages": 34
+  }
+}

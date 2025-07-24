@@ -1,0 +1,641 @@
+[
+  {
+    "text": "Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation Sebastian Hofstätter, Sophia Althammer, Michael Schröder, Mete Sertkan and Allan Hanbury first. last tuwien. ac. at TU Wien, Vienna, Austria ABSTRACT Retrieval and ranking models are the backbone of many applications such as web search, open domain QA, or text-based recommender systems. The latency of neural ranking models at query time is largely dependent on the architecture and deliberate choices by their designers to trade-off effectiveness for higher efficiency. This focus on low query latency of a rising number of efficient ranking architectures make them feasible for production deployment. In machine learning an increasingly common approach to close the effectiveness gap of more efficient models is to apply knowledge distillation from a large teacher model to a smaller student model. We find that different ranking architectures tend to produce output scores in different magnitudes.",
+    "chunk_size": 990,
+    "word_count": 143,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 0,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_0",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "models is to apply knowledge distillation from a large teacher model to a smaller student model. We find that different ranking architectures tend to produce output scores in different magnitudes. Based on this finding, we propose a cross-architecture training procedure with a margin focused loss (Margin-MSE), that adapts knowledge distillation to the varying score output distributions of different BERT and non-BERT pas- sage ranking architectures. We apply the teachable information as additional fine-grained labels to existing training triples of the MSMARCO-Passage collection. We evaluate our procedure of dis- tilling knowledge from state-of-the-art concatenated BERT models to four different efficient architectures (TK, ColBERT, PreTT, and a BERT CLS dot product model). We show that across our evaluated architectures our Margin-MSE knowledge distillation significantly improves re-ranking effectiveness without compromising their effi- ciency.",
+    "chunk_size": 957,
+    "word_count": 130,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 1,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_1",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "CLS dot product model). We show that across our evaluated architectures our Margin-MSE knowledge distillation significantly improves re-ranking effectiveness without compromising their effi- ciency. Additionally, we show our general distillation method to improve nearest neighbor based index retrieval with the BERT dot product model, offering competitive results with specialized and much more costly training methods. To benefit the community, we publish the teacher-score training files in a ready-to-use package. 1 INTRODUCTION The same principles that applied to traditional IR systems to achieve low query latency also apply to novel neural ranking models: We need to transfer as much computation and data transformation to the indexing phase as possible to require less resources at query time   33,34.",
+    "chunk_size": 810,
+    "word_count": 116,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 2,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_2",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "latency also apply to novel neural ranking models: We need to transfer as much computation and data transformation to the indexing phase as possible to require less resources at query time   33,34. For the most effective BERT-based   11  neural ranking models, which we refer to as BERT CAT, this transfer is simply not possible, as the concatenation of query and passage require all Transformer layers to be evaluated at query time to receive a ranking score  36. To overcome this architecture restriction the neural-IR com- munity proposed new architectures by deliberately choosing to trade-off effectiveness for higher efficiency.",
+    "chunk_size": 634,
+    "word_count": 98,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 3,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_3",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "receive a ranking score  36. To overcome this architecture restriction the neural-IR com- munity proposed new architectures by deliberately choosing to trade-off effectiveness for higher efficiency. Among these low query latency approaches are: TK 18  with shallow Transformers and separate query and document contextualization; ColBERT  21  with late-interactions of BERT term representations; PreTT  29  with a combination of query-independent and query-dependent Transformer layers; and a BERT-CLS dot product scoring model O 100 200 300 400 500 Training Batch Count (Thousands) 50050100150200Output ScorePos. Average Neg. AverageColBERT BERTDOT BERTCAT TKFigure 1: Raw query-passage pair scores during training of different ranking models. The margin between the positive and negative samples is shaded. which we refer to as BERT DOT, also known in the literature as Tower-BERT   4 , BERT-Siamese   44 , or TwinBERT   27.",
+    "chunk_size": 925,
+    "word_count": 131,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 4,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_4",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "ranking models. The margin between the positive and negative samples is shaded. which we refer to as BERT DOT, also known in the literature as Tower-BERT   4 , BERT-Siamese   44 , or TwinBERT   27. 1Each approach has unique characteristics that make them suitable for production-level query latency which we discuss in Section 2. An increasingly common way to improve smaller or more effi- cient models is to train them, as students, to imitate the behavior of larger or ensemble teacher models via Knowledge Distillation (KD)   15. This is typically applied to the same architecture with fewer layers and dimensions   20,38  via the output or layer-wise activations   39. KD has been applied in the ranking task for the same architecture with fewer layers   5,14,25  and in constrained sub-tasks, such as keyword-list matching  27.",
+    "chunk_size": 832,
+    "word_count": 132,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 5,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_5",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "output or layer-wise activations   39. KD has been applied in the ranking task for the same architecture with fewer layers   5,14,25  and in constrained sub-tasks, such as keyword-list matching  27. In this work we propose a model-agnostic training procedure using cross-architecture knowledge distillation from BERT CATwith the goal to improve the effectiveness of efficient passage ranking models without compromising their query latency benefits. A unique challenge for knowledge distillation in the ranking task is the possible range of scores, i. e. a ranking model outputs a single unbounded decimal value and the final result solely depends on the relative ordering of the scores for the candidate documents per query. We make the crucial observation, depicted in Figure 1, that different architectures during their training gravitate towards unique range patterns in their output scores.",
+    "chunk_size": 895,
+    "word_count": 133,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 6,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_6",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "documents per query. We make the crucial observation, depicted in Figure 1, that different architectures during their training gravitate towards unique range patterns in their output scores. The BERT CATmodel exhibits positive relevant-document scores, whereas on average the non-relevant documents are below zero. The TKmodel solely 1Yes, we see the irony: https:  xkcd. com 927 arXiv:2010. 02666v2  cs. IR  22 Jan 2021 produces negative averages, and the BERT DOT andColBERT mod- els, due to their dot product scoring, show high output scores. This leads us to our main research question: RQ1 How can we apply knowledge distillation in retrieval across architecture types. To optimally support the training of cross-architecture knowl- edge distillation, we allow our models to converge to a free scoring range, as long as the margin is alike with the teacher.",
+    "chunk_size": 862,
+    "word_count": 133,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 7,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_7",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "types. To optimally support the training of cross-architecture knowl- edge distillation, we allow our models to converge to a free scoring range, as long as the margin is alike with the teacher. We make use of the common triple (q, relevant doc, non-relevant doc) training regime, by distilling knowledge via the margin of the two scoring pairs. We train the students to learn the same margin as their teach- ers, which leaves the models to find the most comfortable or natural range for their architecture. We optimize the student margin to the teacher margin with a Mean Squared Error loss (Margin-MSE). We confirm our strategy with an ablation study of different knowledge distillation losses and show the Margin-MSE loss to be the most effective.",
+    "chunk_size": 750,
+    "word_count": 124,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 8,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_8",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "margin with a Mean Squared Error loss (Margin-MSE). We confirm our strategy with an ablation study of different knowledge distillation losses and show the Margin-MSE loss to be the most effective. Thanks to the rapid advancements and openness of the Natural Language Processing community, we have a number of pre-trained BERT-style language models to choose from to create different vari- ants of the BERT CATarchitecture to study, allowing us to answer: RQ2 How effective is the distillation with a single teacher model in comparison to an ensemble of teachers. We train three different BERT CATversions as teacher models with different initializations: BERT-Base   11 , BERT-Large with whole word masking  11 , and ALBERT-large  24. To understand the behavior that the different language models bring to the BERT CAT architecture, we compare their training score margin distributions and find that the models offer variability suited for an ensemble.",
+    "chunk_size": 952,
+    "word_count": 147,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 9,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_9",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": " behavior that the different language models bring to the BERT CAT architecture, we compare their training score margin distributions and find that the models offer variability suited for an ensemble. We created the teacher ensemble by averaging each of the three scores per query-document pair. We conduct the knowledge distil- lation with a single teacher and a teacher ensemble. The knowledge distillation has a general positive effect on all retrieval effectiveness metrics of our student models. In most cases the teacher ensemble further improves the student models' effectiveness in the re-ranking scenario above the already improved single teacher training. The dual-encoder BERT DOT model can be used for full collec- tion indexing and retrieval with a nearest neighbor vector search approach, so we study: RQ3 How effective is our distillation for dense nearest neighbor retrieval.",
+    "chunk_size": 891,
+    "word_count": 135,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 10,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_10",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": " model can be used for full collec- tion indexing and retrieval with a nearest neighbor vector search approach, so we study: RQ3 How effective is our distillation for dense nearest neighbor retrieval. We observe similar trends in terms of effectiveness per teacher strategy, with increased effectiveness of BERT DOT models for a single teacher and again a higher increase for the ensemble of teachers. Even though we do not add dense retrieval specific train- ing methods, such as index-based passage sampling   44  or in-batch negatives   26  we observe very competitive results compared to those much more costly training approaches. To put the improved models in the perspective of the efficiency- effectiveness trade-off, we investigated the following question: RQ4 By how much does effective knowledge distillation shift the balance in the efficiency-effectiveness trade-off. We show how the knowledge distilled efficient architectures outperform the BERT CAT baselines on several metrics.",
+    "chunk_size": 994,
+    "word_count": 148,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 11,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_11",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "knowledge distillation shift the balance in the efficiency-effectiveness trade-off. We show how the knowledge distilled efficient architectures outperform the BERT CAT baselines on several metrics. There is no longer a compromise in utilizing PreTT orColBERT and theeffectiveness gap, i. e. the difference between the most effective and the other models, of BERT DOT andTKis significantly smaller. The contributions of this work are as follows: •We propose a cross-architecture knowledge distillation pro- cedure with a Margin-MSE loss for a range of neural retrieval architectures •We conduct a comprehensive study of the effects of cross- architecture knowledge distillation in the ranking scenario •We publish our source code as well as ready-to-use teacher training files for the community at: https:  github.",
+    "chunk_size": 813,
+    "word_count": 118,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 12,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_12",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "of the effects of cross- architecture knowledge distillation in the ranking scenario •We publish our source code as well as ready-to-use teacher training files for the community at: https:  github. com sebastian-hofstaetter neural-ranking-kd 2 RETRIEVAL MODELS We study the effects of knowledge distillation on a wide range of recently introduced Transformer-   BERT-based ranking models. We describe their architectures in detail below and summarize them in Table 1. 2. 1 BERT CATConcatenated Scoring The common way of utilizing the BERT pre-trained Transformer model in a re-ranking scenario   31,36,47  is by concatenating query and passage input sequences. We refer to this base architecture as BERT CAT.",
+    "chunk_size": 708,
+    "word_count": 104,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 13,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_13",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "way of utilizing the BERT pre-trained Transformer model in a re-ranking scenario   31,36,47  is by concatenating query and passage input sequences. We refer to this base architecture as BERT CAT. In the BERT CATranking model, the query 𝑞1:𝑚and passage𝑝1:𝑛sequences are concatenated with special tokens (using the;operator) and the CLS token representation computed by BERT (selected with 1) is scored with single linear layer 𝑊𝑠: BERT CAT(𝑞1:𝑚,𝑝1:𝑛) BERT( CLS;𝑞1:𝑚;SEP;𝑝1:𝑛 )1 𝑊𝑠 (1) We utilize BERT CATas our teacher architecture, as it represents the current state-of-the art in terms of effectiveness, however it requires substantial compute at query time and increases the query latency by seconds   16,44. Simply using smaller BERT variants does not change the design flaw of having to compute every repre- sentation at query time. 2.",
+    "chunk_size": 839,
+    "word_count": 127,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 14,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_14",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "at query time and increases the query latency by seconds   16,44. Simply using smaller BERT variants does not change the design flaw of having to compute every repre- sentation at query time. 2. 2 BERT DOTDot Product Scoring In contrast to BERT CAT, which requires a full online computation, the BERT DOT model only matches a single CLS vector of the query with a single CLS vector of a passage   27,28,44. The BERT DOT model uses two independent BERT computations as follows: ˆ𝑞 BERT( CLS;𝑞1:𝑚 )1 𝑊𝑠 ˆ𝑝 BERT( CLS;𝑝1:𝑛 )1 𝑊𝑠(2) which allows us to pre-compute every contextualized passage rep- resentation ˆ𝑝. After this, the model computes the final scores as the dot product ofˆ𝑞and ˆ𝑝: BERT DOT(𝑞1:𝑚,𝑝1:𝑛) ˆ𝑞 ˆ𝑝 (3) BERT DOT, with its bottleneck of comparing single vectors, com- presses information much more strongly than BERT CAT, which brings large query time improvements at the cost of lower effec- tiveness, as can be seen in Table 1. 2.",
+    "chunk_size": 946,
+    "word_count": 161,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 15,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_15",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "of comparing single vectors, com- presses information much more strongly than BERT CAT, which brings large query time improvements at the cost of lower effec- tiveness, as can be seen in Table 1. 2. 3 ColBERT TheColBERT model   21  is similar in nature to BERT DOT, by de- laying the interactions between query and document to after the Table 1: Comparison of model characteristics using DistilBERT instances. Effectiveness compares the baseline nDCG 10 of MSMARCO-DEV. NN Index refers to indexing the passage representations in a nearest neighbor index. 𝑃 refers to the number of passages; 𝑇 to the total number of term occurrences in the collection; 𝑚the query length; and 𝑛the document length. Model EffectivenessQuery GPUQuery-Passage InteractionPassage NN Storage Req. Latency Memory Cache Index (  Vector Size) BERT CAT 1 950 ms 10. 4 GB All TF layers       BERT DOT O. 87 23 ms 3. 6 GB Single dot product      𝑃  ColBERT O. 97 28 ms 3. 4 GB 𝑚 𝑛dot products      𝑇  PreTT O. 97 455 ms 10.",
+    "chunk_size": 994,
+    "word_count": 169,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 16,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_16",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": " Index (  Vector Size) BERT CAT 1 950 ms 10. 4 GB All TF layers       BERT DOT O. 87 23 ms 3. 6 GB Single dot product      𝑃  ColBERT O. 97 28 ms 3. 4 GB 𝑚 𝑛dot products      𝑇  PreTT O. 97 455 ms 10. 9 GB Min. 1 TF layer (here 3)     𝑇  TK O. 89 14 ms 1. 8 GB 𝑚 𝑛dot products   Kernel-pooling     𝑇  BERT computation. ColBERT uses every query and document rep- resentation: ˆ𝑞1:𝑚 BERT( CLS;𝑞1:𝑚; rep(MASK) ) 𝑊𝑠 ˆ𝑝1:𝑛 BERT( CLS;𝑝1:𝑛 ) 𝑊𝑠(4) where the rep(𝑀𝐴𝑆𝐾)method repeats the MASK token a num- ber of times, set by a hyperparameter. Khattab and Zaharia  21  introduced this query augmentation method to increase the com- putational capacity of the BERT model for short queries. We inde- pendently confirmed that adding these MASK tokens improves the effectiveness of ColBERT. The interactions in the ColBERT model are aggregated with a max-pooling per query term and sum of query-term scores as follows: ColBERT(𝑞1:𝑚,𝑝1:𝑛) 𝑚   1max 1.",
+    "chunk_size": 937,
+    "word_count": 166,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 17,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_17",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "improves the effectiveness of ColBERT. The interactions in the ColBERT model are aggregated with a max-pooling per query term and sum of query-term scores as follows: ColBERT(𝑞1:𝑚,𝑝1:𝑛) 𝑚   1max 1. 𝑛ˆ𝑞𝑇 1:𝑚 ˆ𝑝1:𝑛 (5) The aggregation only requires 𝑛 𝑚dot product computations, making it roughly as efficient as BERT DOT, however the storage cost of pre-computing passage representations is much higher and depends on the total number of terms in the collection. Khattab and Zaharia  21  proposed to compress the dimensions of the represen- tation vectors by reducing the output features of 𝑊𝑠. We omitted this compression, as storage space is not the focus of our study and to better compare results across different models. 2.",
+    "chunk_size": 726,
+    "word_count": 116,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 18,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_18",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "represen- tation vectors by reducing the output features of 𝑊𝑠. We omitted this compression, as storage space is not the focus of our study and to better compare results across different models. 2. 4 PreTT ThePreTT architecture   29  is conceptually between BERT CATand ColBERT , as it allows to compute 𝑏BERT-layers separately for query and passage: ˆ𝑞1:𝑚 BERT 1:𝑏( CLS;𝑞1:𝑚 ) ˆ𝑝1:𝑛 BERT 1:𝑏( CLS;𝑝1:𝑛 )(6) Then PreTT concatenates the sequences with a SEP separator token and computes the remaining layers to compute a total of ˆ𝑏 BERT-layers. Finally, the CLS token output is pooled with single linear layer 𝑊𝑠: PreTT(𝑞1:𝑚,𝑝1:𝑛) BERT 𝑏:ˆ𝑏( ˆ𝑞1:𝑚;SEP;ˆ𝑝1:𝑛 )1 𝑊𝑠 (7) Concurrently to PreTT , DC-BERT   48  and EARL   13  have been proposed with very similar approaches to split Transformer layers. We selected PreTT simply as a representative of this group of mod- els. Similar to ColBERT , we omitted the optional compression of representations for better comparability. 2.",
+    "chunk_size": 974,
+    "word_count": 155,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 19,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_19",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "Transformer layers. We selected PreTT simply as a representative of this group of mod- els. Similar to ColBERT , we omitted the optional compression of representations for better comparability. 2. 5 Transformer-Kernel The Transformer-Kernel (TK) model   18  is not based on BERT pre- training, but rather uses shallow Transformers. TK independently contextualizes query 𝑞1:𝑚and passage 𝑝1:𝑛based on pre-trained word embeddings, where the intensity of the contextualization (Transformers as TF) is set by a gate 𝛼: ˆ𝑞𝑖 𝑞𝑖 𝛼 TF(𝑞1:𝑚)𝑖 (1 𝛼) ˆ𝑝𝑖 𝑝𝑖 𝛼 TF(𝑝1:𝑛)𝑖 (1 𝛼)(8) The sequences ˆ𝑞1:𝑚and ˆ𝑝1:𝑛interact in a match-matrix with a cosine similarity per term pair and each similarity is activated by a set of Gaussian kernels  43 : 𝐾𝑘 𝑖,𝑗 exp   cos(ˆ𝑞𝑖,ˆ𝑝𝑗) 𝜇𝑘 2 2𝜎2. (9) Kernel-pooling is a soft-histogram, which counts the number of occurrences of similarity ranges. Each kernel 𝑘focuses on a fixed range with center 𝜇𝑘and width of 𝜎.",
+    "chunk_size": 933,
+    "word_count": 148,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 20,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_20",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "exp   cos(ˆ𝑞𝑖,ˆ𝑝𝑗) 𝜇𝑘 2 2𝜎2. (9) Kernel-pooling is a soft-histogram, which counts the number of occurrences of similarity ranges. Each kernel 𝑘focuses on a fixed range with center 𝜇𝑘and width of 𝜎. These kernel activations are then summed, first by the passage term dimension 𝑗, log-activated, and then the query dimension is summed, resulting in a single score per kernel. The final score is calculated by a weighted sum using 𝑊𝑠: TK(𝑞1:𝑚,𝑝1:𝑛)  𝑚   𝑖 1log    𝑛   𝑗 1𝐾𝑘 𝑖,𝑗ª      𝑊𝑠 (10) 2. 6 Comparison In Table 1 we summarize our evaluated models. We compare the ef- ficiency and effectiveness trade-off in the leftmost section, followed by a general overview of the model capabilities in the right most section. We measure the query latency for 1 query and 1000 doc- uments with cached document representations where applicable and report the peak GPU memory requirement for the inference of the validation set.",
+    "chunk_size": 915,
+    "word_count": 150,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 21,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_21",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": " We measure the query latency for 1 query and 1000 doc- uments with cached document representations where applicable and report the peak GPU memory requirement for the inference of the validation set. We summarize our observations of the different model characteristics: •The query latency of BERT CATis prohibitive for efficient production use (Except for head queries that can be fully pre-computed). BERT CAT ❶ Teacher Training RanknetBERT CAT Result StorePassage - Passage - Passage  Passage   QueryQuery q, p   q, p-  BERT CAT BERT CAT ❷ Teacher Inference Student ❸ Student Training Margin -MSEStudentFigure 2: Our knowledge distillation process, re-visiting the same training triples in all steps: ➊Training the BERT CATmodel; ➋Using the trained BERT CATto create scores for all training triples; ➌Individually training the student models with Margin- MSE using the teacher scores.",
+    "chunk_size": 887,
+    "word_count": 133,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 22,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_22",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "in all steps: ➊Training the BERT CATmodel; ➋Using the trained BERT CATto create scores for all training triples; ➌Individually training the student models with Margin- MSE using the teacher scores. •BERT DOT is the most efficient BERT-based model with re- gards to storage and query latency, at the cost of lower ef- fectiveness compared to ColBERT and PreTT. •PreTT highly depends on the choice of the concatenation- layer hyperparameter, which we set to 3 to be between BERT CATandColBERT. •ColBERT is especially suited for small collections, as it re- quires a large passage cache. •TKis less effective overall, however it is much cheaper to run than the other models. The most suitable neural ranking model ultimately depends on the exact scenario. To allow people to make the choice, we evaluated all presented models. we use BERT CATas our teacher architecture and the other presented architectures as students.",
+    "chunk_size": 917,
+    "word_count": 147,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 23,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_23",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "depends on the exact scenario. To allow people to make the choice, we evaluated all presented models. we use BERT CATas our teacher architecture and the other presented architectures as students. 3 CROSS-ARCHITECTURE KNOWLEDGE DISTILLATION The established approach to training deep neural ranking models is mainly based on large-scale annotated data. Here, the MSMARCO collection is becoming the de-facto standard. The MSMARCO col- lection only contains binary annotations for fewer than two positive examples per query, and no explicit annotations for non-relevant passages. The approach proposed by Bajaj et al. 1  is to utilize ran- domly selected passages retrieved from the top 1000 candidates of a traditional retrieval system as negative examples. This approach works reasonably well, but accidentally picking relevant passages is possible. Neural retrieval models are commonly trained on triples of bi- nary relevance assignments of one relevant and one non-relevant passage.",
+    "chunk_size": 983,
+    "word_count": 144,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 24,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_24",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "well, but accidentally picking relevant passages is possible. Neural retrieval models are commonly trained on triples of bi- nary relevance assignments of one relevant and one non-relevant passage. However, they are used in a setting that requires a much more nuanced view of relevance when they re-rank a thousand possibly relevant passages. The BERT CATarchitecture shows the strongest generalization capabilities, which other architectures do not posses. Following our observation of distinct scoring ranges of different model architectures in Figure 1, we propose to utilize a knowledge distillation loss by only optimizing the margin between the scores ofthe relevant and the non-relevant sample passage per query. We call our proposed approach Margin Mean Squared Error (Margin-MSE). We train ranking models on batches containing triples of queries 𝑄, relevant passages 𝑃 , and non-relevant passages 𝑃.",
+    "chunk_size": 908,
+    "word_count": 134,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 25,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_25",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": " per query. We call our proposed approach Margin Mean Squared Error (Margin-MSE). We train ranking models on batches containing triples of queries 𝑄, relevant passages 𝑃 , and non-relevant passages 𝑃. We utilize the output margin of the teacher model 𝑀𝑡as label to optimize the weights of the student model 𝑀𝑠: I(𝑄,𝑃 ,𝑃 ) MSE(𝑀𝑠(𝑄,𝑃 ) 𝑀𝑠(𝑄,𝑃 ), 𝑀𝑡(𝑄,𝑃 ) 𝑀𝑡(𝑄,𝑃 ))(11) MSE is the Mean Squared Error loss function, calculating the mean of the squared differences between the scores 𝑆and the targets 𝑇over the batch size: MSE(𝑆,𝑇) 1  𝑆    𝑠 𝑆,𝑡 𝑇(𝑠 𝑡)2(12) The Margin-MSE loss discards the original binary relevance information, in contrast to other knowledge distillation approaches  25 , as the margin of the teacher can potentially be negative, which would indicate a reverse ordering from the original training data.",
+    "chunk_size": 817,
+    "word_count": 133,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 26,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_26",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "in contrast to other knowledge distillation approaches  25 , as the margin of the teacher can potentially be negative, which would indicate a reverse ordering from the original training data. We observe that the teacher models have a very high pairwise ranking accuracy during training of over 98 , therefore we view it as redundant to add the binary information in the ranking loss. 2 In Figure 2 we show the staged process of our knowledge distilla- tion. For simplicity and ease of re-use, we utilize the same training triples for every step. The process begins with training a BERT CAT teacher model on the collection labels with a RankNet loss   3. After the teacher training is finished, we use the teacher model again to infer all scores for the training data, without updating its weights. This allows us to store the teacher scores once, for an efficient ex- perimentation and sharing workflow.",
+    "chunk_size": 903,
+    "word_count": 153,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 27,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_27",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "teacher model again to infer all scores for the training data, without updating its weights. This allows us to store the teacher scores once, for an efficient ex- perimentation and sharing workflow. Finally, we train our student model of a different architecture, by using the teacher scores as labels with our proposed Margin-MSE loss. 2We do not analyze this statistic further in this paper, as we did not see a correlation or interesting difference between models on this pairwise training accuracy metric. 4 EXPERIMENT DESIGN For our neural re-ranking training and inference we use PyTorch   37  and the HuggingFace Transformer library   42. For the first stage indexing and retrieval we use Anserini  46. 4. 1 Collection   Query Sets We use the MSMARCO-Passage   1  collection with sparsely-judged MSMARCO-DEV query set of 49,000 queries as well as the densely- judged query set of 43 queries derived from TREC-DL'19   7.",
+    "chunk_size": 926,
+    "word_count": 147,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 28,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_28",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "  Query Sets We use the MSMARCO-Passage   1  collection with sparsely-judged MSMARCO-DEV query set of 49,000 queries as well as the densely- judged query set of 43 queries derived from TREC-DL'19   7. For TREC graded relevance labels we use a binarization point of 2 for MRR and MAP. MSMARCO is based on sampled Bing queries and contains 8. 8 million passages with a proposed training set of 40 million triples sampled. We evaluate our teachers on the full training set, so to not limit future work in terms of the number of triples available. We cap the query length at 30tokens and the passage length at 200tokens. 4. 2 Training Configuration We use the Adam   22  optimizer with a learning rate of 7 10 6for all BERT layers, regardless of the number of layers trained. TK is the only model trained on a higher rate of 10 5. We employ early stopping, based on the best nDCG 10 value of the validation set. We use a training batch size of 32. 4.",
+    "chunk_size": 946,
+    "word_count": 171,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 29,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_29",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "of layers trained. TK is the only model trained on a higher rate of 10 5. We employ early stopping, based on the best nDCG 10 value of the validation set. We use a training batch size of 32. 4. 3 Model Parameters All student language models use a 6-layer DistilBERT   38  as their initialization standpoint. We chose DistilBERT over BERT-Base, as it has been shown to provide a close lower bound on the re- sults at half the runtime   29,38. For our ColBERT implementation we repeat the query MASK augmentation 8 times, regardless of the amount of padding in a batch in contrast to Khattab and Za- haria  21. For PreTT we decided to concatenate sequences after 3 layers of the 6 layer DistilBERT, as we want to evaluate it as a mid-choice between ColBERT and BERT CAT. For TK we use the standard 2 layer configuration with 300 dimensional embeddings. For the traditional BM25 we use the tuned parameters from the Anserini documentation.",
+    "chunk_size": 936,
+    "word_count": 165,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 30,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_30",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "between ColBERT and BERT CAT. For TK we use the standard 2 layer configuration with 300 dimensional embeddings. For the traditional BM25 we use the tuned parameters from the Anserini documentation. 5 RESULTS We now discuss our research questions, starting with the study of our proposed Margin-MSE loss function; followed by an analysis of different teacher model results and their impact on the knowledge distillation; and finally examining what the knowledge distillation improvement means for the efficiency-effectiveness trade-off. 5. 1 Optimization Study We validate our approach presented in Section 3 and our research question RQ1 How can we apply knowledge distillation in retrieval across architecture types. by comparing Margin-MSE with different knowledge distillation losses using the same training data.",
+    "chunk_size": 816,
+    "word_count": 119,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 31,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_31",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "question RQ1 How can we apply knowledge distillation in retrieval across architecture types. by comparing Margin-MSE with different knowledge distillation losses using the same training data. We com- pare our approach with a pointwise MSE loss, defined as follows: I(𝑄,𝑃 ,𝑃 ) MSE(𝑀𝑠(𝑄,𝑃 ),𝑀𝑡(𝑄,𝑃 ))  MSE(𝑀𝑠(𝑄,𝑃 ),𝑀𝑡(𝑄,𝑃 ))(13)Table 2: Loss function ablation results on MSMARCO-DEV, using a single teacher ( T1in Table 3). The original training baseline is indicated by. Model KD Loss nDCG 10 MRR 10 MAP 100 ColBERT. 417. 357. 361 Weighted RankNet. 417. 356. 360 Pointwise MSE. 428. 365. 369 Margin-MSE. 431. 370. 374 BERT DOT. 373. 316. 321 Weighted RankNet. 384. 326. 332 Pointwise MSE. 387. 328. 332 Margin-MSE. 388. 330. 335 TK. 384. 326. 331 Weighted RankNet. 387. 328. 333 Pointwise MSE. 394. 335. 340 Margin-MSE. 398. 339. 344 This is a standard approach already used by Vakili Tahami et al. 41  and Li et al. 25.",
+    "chunk_size": 919,
+    "word_count": 152,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 32,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_32",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "335 TK. 384. 326. 331 Weighted RankNet. 387. 328. 333 Pointwise MSE. 394. 335. 340 Margin-MSE. 398. 339. 344 This is a standard approach already used by Vakili Tahami et al. 41  and Li et al. 25. Additionally, we utilize a weighted RankNet loss, where we weight the samples in a batch according to the teacher margin: I(𝑄,𝑃 ,𝑃 ) RankNet(𝑀𝑠(𝑄,𝑃 ) 𝑀𝑠(𝑄,𝑃 ))    𝑀𝑡(𝑄,𝑃 ) 𝑀𝑡(𝑄,𝑃 )  (14) We show the results of our ablation study in Table 2 for three distinct ranking architectures that significantly differ from the BERT CATteacher model. We use a single (BERT-Base 𝐶𝐴𝑇) teacher model for this study. For each of the three architectures the Margin- MSE loss outperforms the pointwise MSE and weighted RankNet losses on all metrics. However, we also note that applying knowl- edge distillation in general improves each model's result over the respective original baseline.",
+    "chunk_size": 867,
+    "word_count": 145,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 33,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_33",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "pointwise MSE and weighted RankNet losses on all metrics. However, we also note that applying knowl- edge distillation in general improves each model's result over the respective original baseline. Our aim in proposing to use the Margin- MSE loss was to create a simple yet effective solution that does not require changes to the model architectures or major adaptions to the training procedure. 5. 2 Knowledge Distillation Results Utilizing our proposed Margin-MSE loss in connection with our trained teacher models, we follow the procedure laid out in Section 3 to train our knowledge-distilled student models. Table 3 first shows our baselines, then in the second section the results of our teacher models, and in the third section our student architectures. Each student has a baseline result without teacher training (depicted by  ) and a single teacher T1 as well as the teacher ensemble denoted with T2.",
+    "chunk_size": 910,
+    "word_count": 146,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 34,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_34",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "in the third section our student architectures. Each student has a baseline result without teacher training (depicted by  ) and a single teacher T1 as well as the teacher ensemble denoted with T2. With these results we can now answer: RQ2 How effective is the distillation with a single teacher model in comparison to an ensemble of teachers. We selected BERT-Base CATas our single teacher model, as it is a commonly used instance in neural ranking models. The ensemble of different larger BERT CATmodels shows strong and consistent improvements on all MSMARCO DEV metrics and MAP 1000 of TREC-DL'19. When we compare our teacher model results with the best re-ranking entry   45  of TREC-DL'19, we see that our teachers, Table 3: Effectiveness results for both query sets of our baselines (results copied from cited models), teacher model results (with the teacher signs left of the model name), and using those teachers for our student models.",
+    "chunk_size": 944,
+    "word_count": 155,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 35,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_35",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "for both query sets of our baselines (results copied from cited models), teacher model results (with the teacher signs left of the model name), and using those teachers for our student models. Model TeacherTREC DL Passages 2019 MSMARCO DEV nDCG 10 MRR 10 MAP 1000 nDCG 10 MRR 10 MAP 1000 Baselines BM25. 501. 689. 295. 241. 194. 202 TREC Best Re-rank  45. 738. 882. 457       BERT CAT(6-Layer Distilled Best)  14. 719. 356   BERT-Base DOT ANCE  44. 677. 330   Teacher Models 𝑇1BERT-Base CAT. 730. 866. 455. 437. 376. 381 BERT-Large-WM CAT. 742. 860. 484. 442. 381. 385 ALBERT-Large CAT. 738. 903. 477. 446. 385. 388 𝑇2Top-3 Ensemble. 743. 889. 495. 460. 399. 402 Student Models DistilBERT CAT. 723. 851. 454. 431. 372. 375 T1. 739. 889. 473. 440. 380. 383 T2. 747. 891. 480. 451. 391. 394 PreTT. 717. 862. 438. 418. 358. 362 T1. 748. 890. 475. 439. 378. 382 T2. 737. 859. 472. 447. 386. 389 ColBERT. 722. 874. 445. 417. 357. 361 T1. 738. 862. 472. 431. 370. 374 T2. 744. 878. 478. 436. 375.",
+    "chunk_size": 990,
+    "word_count": 178,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 36,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_36",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "717. 862. 438. 418. 358. 362 T1. 748. 890. 475. 439. 378. 382 T2. 737. 859. 472. 447. 386. 389 ColBERT. 722. 874. 445. 417. 357. 361 T1. 738. 862. 472. 431. 370. 374 T2. 744. 878. 478. 436. 375. 379 BERT-Base DOT. 675. 825. 396. 376. 320. 325 T1. 677. 809. 427. 378. 321. 327 T2. 724. 876. 448. 390. 333. 338 DistilBERT DOT. 670. 841. 406. 373. 316. 321 T1. 704. 821. 441. 388. 330. 335 T2. 712. 862. 453. 391. 332. 337 TK. 652. 751. 403. 384. 326. 331 T1. 669. 813. 414. 398. 339. 344 T2. 666. 797. 415. 399. 341. 345 especially the ensemble outperform the TREC results to represent state-of-the-art results in terms of effectiveness. Overall, we observe that either a single teacher or an ensemble of teachers improves the model results over their respective original baselines. The ensemble T2 improves over T1 for all models on the sparse MSMARCO-DEV labels with many queries. Only on the TREC-DL'19 query set does T2 fail to improve over T1 for TK and PreTT.",
+    "chunk_size": 963,
+    "word_count": 177,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 37,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_37",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "baselines. The ensemble T2 improves over T1 for all models on the sparse MSMARCO-DEV labels with many queries. Only on the TREC-DL'19 query set does T2 fail to improve over T1 for TK and PreTT. The only outlier in our results is BERT-Base DOT trained on T1, where there is no improvement over the baseline, T2 however does show a substantial improvement. This leads us to the conclusion that utilizing an ensemble of teachers is overall preferred to a single teacher model. Furthermore, when we compare the BERT type for the BERT CAT architecture, we see that DistilBERT CAT-T2 outperforms any single teacher model with twice and four times the layers on almost all metrics. For the BERT DOT architecture we also compared BERT- Base and DistilBERT, both as students, and here BERT-Base hasa slight advantage trained on T2.",
+    "chunk_size": 822,
+    "word_count": 139,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 38,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_38",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "and four times the layers on almost all metrics. For the BERT DOT architecture we also compared BERT- Base and DistilBERT, both as students, and here BERT-Base hasa slight advantage trained on T2. However, its T1 results are in- consistent, where almost no improvement is observable, whereas DistilBERT DOT exhibits consistent gains first for T1 and then an- other step for T2. Our T2 training improves both instances of the BERT DOT archi- tecture in comparison to the ANCE   44  trained BERT DOT model and evaluated in the re-ranking setting. To also compare the BERT DOT model in the full collection vector retrieval setting we set out to answer: RQ3 How effective is our distillation for dense nearest neighbor retrieval. The difference to previous results in Table 3 is that now we only use the score of a nearest neighbor search of all indexed passages, without re-ranking BM25.",
+    "chunk_size": 884,
+    "word_count": 148,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 39,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_39",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "for dense nearest neighbor retrieval. The difference to previous results in Table 3 is that now we only use the score of a nearest neighbor search of all indexed passages, without re-ranking BM25. Because we no longer re-rank first-stage results, the pipeline overall becomes more efficient and less com- plex, however the chance of false positives becomes greater and Table 4: Dense retrieval results for both query sets, using a flat Faiss index without compression. ModelIndexTeacherTREC DL Passages 2019 MSMARCO DEV Size nDCG 10 MRR 10 Recall 1K nDCG 10 MRR 10 Recall 1K Baselines BM25 2 GB. 501. 689. 739. 241. 194. 868 BERT-Base DOT ANCE  44. 648. 330. 959 TCT-ColBERT  26. 670. 720. 335. 964 RocketQA  12. 370. 979 Our Dense Retrieval Student Models BERT-Base DOT 12. 7 GB. 593. 757. 664. 347. 294. 913 T1. 631. 771. 702. 358. 304. 931 T2. 668. 826. 737. 371. 315. 947 DistilBERT DOT 12. 7 GB. 626. 836. 713. 354. 299. 930 T1. 687. 818. 749. 379. 321. 954 T2. 697. 868. 769. 381. 323.",
+    "chunk_size": 991,
+    "word_count": 175,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 40,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_40",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "347. 294. 913 T1. 631. 771. 702. 358. 304. 931 T2. 668. 826. 737. 371. 315. 947 DistilBERT DOT 12. 7 GB. 626. 836. 713. 354. 299. 930 T1. 687. 818. 749. 379. 321. 954 T2. 697. 868. 769. 381. 323. 957 less interpretable in a dense vector space retrieval. The ColBERT ar- chitecture also includes the possibility to conduct a dense retrieval, however at the expense of increasing the storage requirements of 2GB plain text to a 2TB index, which stopped us from conducting extensive experiments with ColBERT. We show nearest neighbor retrieval results of our BERT DOTmod- els (using both BERT-Base and DistilBERT encoders) and baselines for dense retrieval in Table 4. Training with a teacher ensemble is again more effective than training with a single teacher, which is still more effective than training the BERT DOT alone without teachers. Interestingly, DistilBERT outperforms BERT-Base across the board with half the Transformer layers.",
+    "chunk_size": 939,
+    "word_count": 154,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 41,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_41",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "a single teacher, which is still more effective than training the BERT DOT alone without teachers. Interestingly, DistilBERT outperforms BERT-Base across the board with half the Transformer layers. As we let the models train as long as they improved the early stopping set, it suggests, for the retrieval task we may not need more model capacity, which is a sure bet to improve results on the BERT CATarchitecture. Our dense retrieval results are competitive with related meth- ods, even though they specifically train for the dense retrieval task. Our approach, while not specific to dense retrieval training is com- petitive with the more costly and complex approaches ANCE and TCT-ColBERT. On MSMARCO DEV MRR 10 we are at a slight disadvantage, however we outperform the models that also pub- lished TREC-DL'19 results.",
+    "chunk_size": 822,
+    "word_count": 132,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 42,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_42",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "with the more costly and complex approaches ANCE and TCT-ColBERT. On MSMARCO DEV MRR 10 we are at a slight disadvantage, however we outperform the models that also pub- lished TREC-DL'19 results. RocketQA, the current state-of-the-art dense retrieval result on MSMARCO DEV requires a batch size of 4,000 and enormous computational resources, which are hardly comparable to our technique that only requires a batch size of 32 and can be trained on a single GPU. 5. 3 Closing the Efficiency-Effectiveness Gap We round off our results with a thorough look at the effects of knowledge distillation on the relation between effectiveness and efficiency in the re-ranking scenario. We measure the median query latency under the conditions that we have our cached document representation in memory, contextualize a single query, and com- puted the respective model's interaction pattern for 1 query and 1000 documents in a single batch on a TITAN RTX GPU with 24GB of memory.",
+    "chunk_size": 967,
+    "word_count": 156,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 43,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_43",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "in memory, contextualize a single query, and com- puted the respective model's interaction pattern for 1 query and 1000 documents in a single batch on a TITAN RTX GPU with 24GB of memory. The large GPU memory allows us to also compute the same batch size for BERT CAT, which for inference requires 16GB of total reserved GPU memory in the BERT-Base case. We measure the latency of the neural model in PyTorch inference mode (without 101102103 Query Latency (ms)O. 640. 660. 680. 700. 720. 740. 76nDCG 10 T1T2T1T2 T1T2 T1T2T1 T2 T1T2BERT-BaseCAT BERT-BaseDOT ColBERT DistilBERTCAT DistilBERTDOT PreTT TKFigure 3: Query latency vs. nDCG 10 on TREC'19 101102103 Query Latency (ms)O. 300. 320. 340. 360. 380. 40MRR 10 T1T2T1T2T1T2 T1T2T1T2 T1T2 BERT-BaseCAT BERT-BaseDOT ColBERT DistilBERTCAT DistilBERTDOT PreTT TK Figure 4: Query latency vs.",
+    "chunk_size": 839,
+    "word_count": 133,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 44,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_44",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "TREC'19 101102103 Query Latency (ms)O. 300. 320. 340. 360. 380. 40MRR 10 T1T2T1T2T1T2 T1T2T1T2 T1T2 BERT-BaseCAT BERT-BaseDOT ColBERT DistilBERTCAT DistilBERTDOT PreTT TK Figure 4: Query latency vs. MRR 10 on MSMARCO DEV accounting for pre-processing or disk access times, as those are highly dependent on the use of optimized inference libraries) to answer: RQ4 By how much does effective knowledge distillation shift the balance in the efficiency-effectiveness trade-off. In Figures 3 and 4, we plot the median query latency on the log-scaled x-axis versus the effectiveness on the y-axis. The teacher trained models are indicated with T1andT2. The latency for differ- ent teachers does not change, as we do not change the architecture, only the weights of the models. The T1 teacher model BERT CAT is indicated with the red square.",
+    "chunk_size": 834,
+    "word_count": 131,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 45,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_45",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "T1andT2. The latency for differ- ent teachers does not change, as we do not change the architecture, only the weights of the models. The T1 teacher model BERT CAT is indicated with the red square. The TREC-DL'19 results in Fig- ure 3 show how DistilBERT CAT, PreTT, and ColBERT not only close the gap to BERT-Base CAT, but improve on the single instance BERT-Base CATresults. The BERT DOT and TK models, while not reaching the effectiveness of the other models, are also improved over their baselines and are more efficient in terms of total runtime (TK) and index space ( BERT DOT). The MSMARCO DEV results in Figure 4 differ from Figure 3 in DistilBERT CATand PreTT outper- forming BERT-Base CATas well as the evaluated BERT DOT variants under-performing overall in comparison to TK and ColBERT.",
+    "chunk_size": 797,
+    "word_count": 136,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 46,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_46",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "results in Figure 4 differ from Figure 3 in DistilBERT CATand PreTT outper- forming BERT-Base CATas well as the evaluated BERT DOT variants under-performing overall in comparison to TK and ColBERT. Even though in this work we measure the inference time on a GPU, we believe that the most efficient models   namely TK, ColBERT, and BERT DOT   allow for production CPU inference, as- suming the document collection has been pre-computed on GPUs. Furthermore, in a cascading search pipeline, one can hide most of the remaining computation complexity of the query contextualiza- tion during earlier stages. 6 TEACHER ANALYSIS Finally, we analyse the distribution of our teacher score margins, to validate the intuition of using a teacher ensemble and we look at per-query nDCG changes for two models between teacher-trained instances and the baseline. 6.",
+    "chunk_size": 850,
+    "word_count": 134,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 47,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_47",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "of our teacher score margins, to validate the intuition of using a teacher ensemble and we look at per-query nDCG changes for two models between teacher-trained instances and the baseline. 6. 1 Teacher Score Distribution Analysis To validate the use of an ensemble of teachers for RQ2, we analyze the output score margin distribution of our teacher models in Figure 5, to see if they bring diversity to the ensemble mix. This is the margin used in the Margin-MSE loss. We observe that the same BERT CATarchitecture, differing only in the BERT language model used, shows three distinct score patterns. We view this as a good sign for the applicability of an ensemble of teachers, indicating that the different teachers have different viewpoints to offer. To ensemble our teacher models we computed a mean of their scores per example used for the knowledge distillation, to not introduce more complexity in the process.",
+    "chunk_size": 917,
+    "word_count": 152,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 48,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_48",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": " have different viewpoints to offer. To ensemble our teacher models we computed a mean of their scores per example used for the knowledge distillation, to not introduce more complexity in the process. An interesting quirk of our Margin-MSE definition is the possi- bility to reverse orderings if the margin between a pair is negative. In Figure 5 we can see the reversal of the ordering of pairs in the distribution for the   O margin. It happens rarely and if a swap occurs the score difference is small. We investigated this issue by qualitatively analyzing a few dozen cases and found that the teacher models are most of the time correct in their determination to re- verse or equalize the margin. Because it only affects a few percent of the training data we retained those samples as well to not change the training data. -505101520253035 Score Margin (Relevant - Non Relevant)O. 000. 020. 040. 060. 080. 100. 120. 140. 16Rel.",
+    "chunk_size": 931,
+    "word_count": 159,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 49,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_49",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "of the training data we retained those samples as well to not change the training data. -505101520253035 Score Margin (Relevant - Non Relevant)O. 000. 020. 040. 060. 080. 100. 120. 140. 16Rel. OccurenceBERT-BaseCAT ALBERT-LargeCAT BERT-LargeCATFigure 5: Distribution of the margins between relevant and non-relevant documents of the three teacher models on MS MARCO-Passage training data  O. 20. 00. 20. 40. 6 DistilBERTDOT-T1 to DistilBERTDOT DistilBERTDOT-T2 to DistilBERTDOT Sorted Queries O. 20. 00. 20. 40. 6 ColBERT-T1 to ColBERT ColBERT-T2 to ColBERTnDCG 10 Change Figure 6: A detailed comparison between T1 and T2 training ndcg 10 changes per query of the TREC-DL'19 query set 6. 2 Per-Query Teacher Impact Analysis In addition to the aggregated results presented in Table 3, we now take a closer look at the impact of T1 and T2 teachers in a per-query analysis for ColBERT and DistilBERT DOT in Figure 6.",
+    "chunk_size": 913,
+    "word_count": 145,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 50,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_50",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "Analysis In addition to the aggregated results presented in Table 3, we now take a closer look at the impact of T1 and T2 teachers in a per-query analysis for ColBERT and DistilBERT DOT in Figure 6. We plot the differences in nDCG 10 per query on the TREC-DL'19 set between the original training results and the T1 and T2 training respectively. A positive change means the T1 T2 trained model does better on this particular query. We sorted the queries by the T2 changes for both plots, and plotted the corresponding query results for T1 at the same position. Overall, the T1   T2 training for both models roughly improves 60   of queries and decreases results on 33   with the rest of queries unchanged. Interestingly, the average change in each direction between the T1 and T2 training shows that T2 results become more extreme, as they improve more on average (DistilBERT DOT from T1 10  to T2 13 ; ColBERT from T1  6  to T2 9 ), but also decrease stronger on average (DistilBERT DOT from T1 6.",
+    "chunk_size": 997,
+    "word_count": 178,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 51,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_51",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "T2 results become more extreme, as they improve more on average (DistilBERT DOT from T1 10  to T2 13 ; ColBERT from T1  6  to T2 9 ), but also decrease stronger on average (DistilBERT DOT from T1 6. 8  to T2 7. 2 ; ColBERT from T1  4. 3  to T2 7. 8 ). As we saw in Table 3 the aggregated results, still put T2 in front of T1 overall. However, we caution, that these stronger decreases show a small limitation of our knowledge distillation approach. 7 RELATED WORK Efficient relevance models. Recent studies have investigated different approaches for improving the efficiency of relevance mod- els. Ji et al. 19  demonstrate that approximations of interaction- based neural ranking algorithms using kernels with locality-sensitive hashing accelerate the query-document interaction computation. In order to reduce the query processing latency, Mackenzie et al. 33  propose a static index pruning method when augmenting the inverted index with precomputed re-weighted terms   8.",
+    "chunk_size": 975,
+    "word_count": 159,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 52,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_52",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "computation. In order to reduce the query processing latency, Mackenzie et al. 33  propose a static index pruning method when augmenting the inverted index with precomputed re-weighted terms   8. Several approaches aim to improve the efficiency of transformer models with windowed self-attention   17 , using locality-sensitive hashing  23 , replacing the self-attention with a local windowed and global attention   2  or by combining an efficient transformer-kernel model with a conformer layer  35. Adapted training procedures. In order to tackle the challenge of a small annotated training set, Dehghani et al. 10  propose weak supervision controlled by full supervision to train a confident model. Subsequently they demonstrate the success of a semi-supervised student-teacher approach for an information retrieval task using weakly labelled data where the teacher has access to the high quality labels   9. Examining different weak supervision sources, MacA- vaney et al.",
+    "chunk_size": 976,
+    "word_count": 142,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 53,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_53",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "approach for an information retrieval task using weakly labelled data where the teacher has access to the high quality labels   9. Examining different weak supervision sources, MacA- vaney et al. 32  show the beneficial use of headline - content pairs as pseudo-relevance judgements for weak supervision. Considering the success of weak supervision strategies for IR, Khattab and Za- haria  21  train ColBERT   21  for OpenQA with guided supervision by iteratively using ColBERT to extract positive and negative sam- ples as training data. Similarly Xiong et al. 44  construct negative samples from the approximate nearest neighbours to the positive sample during training and apply this adapted training procedure for dense retrieval training. Cohen et al. 6  demonstrate that the sampling policy for negative samples plays an important role in the stability of the training and the overall performance with respect to IR metrics. MacAvaney et al.",
+    "chunk_size": 948,
+    "word_count": 145,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 54,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_54",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "et al. 6  demonstrate that the sampling policy for negative samples plays an important role in the stability of the training and the overall performance with respect to IR metrics. MacAvaney et al. 30  adapt the training procedure for answer ranking by reordering the training samples and shifting samples to the beginning which are estimated to be easy. Knowledge distillation. Large pretrained language models ad- vanced the state-of-the-art in natural language processing and in- formation retrieval, but the performance gains come with high com- putational cost. There are numerous advances in distilling these models to smaller models aiming for little effectiveness loss. Creating smaller variants of the general-purpose BERT mode, Jiao et al. 20  distill TinyBert and Sanh et al. 38  create DistilBERTand demonstrate how to distill BERT while maintaining the models' accuracy for a variety of natural language understanding tasks.",
+    "chunk_size": 937,
+    "word_count": 141,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 55,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_55",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": " Jiao et al. 20  distill TinyBert and Sanh et al. 38  create DistilBERTand demonstrate how to distill BERT while maintaining the models' accuracy for a variety of natural language understanding tasks. In the IR setting, Tang and Wang  40 distill sequential recom- mendation models for recommender systems with one teacher model. Vakili Tahami et al. 41  study the impact of knowledge distillation on BERT-based retrieval chatbots. Gao et al. 14  and Chen et al. 5  distilled different sizes of the same BERT CAT ar- chitecture and the TinyBert library   20. As part of the PARADE document ranking model Li et al. 25  showed a similar BERT CAT toBERT CATsame-architecture knowledge distillation for different layer and dimension hyperparameters. A shortcoming of these dis- tillation approaches is that they are only applicable to the same architecture which restricts the retrieval model to full online in- ference of the BERT CATmodel. Lu et al.",
+    "chunk_size": 946,
+    "word_count": 151,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 56,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_56",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": " shortcoming of these dis- tillation approaches is that they are only applicable to the same architecture which restricts the retrieval model to full online in- ference of the BERT CATmodel. Lu et al. 27  utilized knowledge distillation from BERT CATtoBERT DOT in the setting of keyword matching to select ads for sponsored search. They first showed, that a knowledge transfer from BERT CATtoBERT DOT is possible, albeit in a more restricted setting of keyword list matching in comparison to our fulltext ranking setting. 8 CONCLUSION We proposed to use cross-architecture knowledge distillation to improve the effectiveness of query latency efficient neural pas- sage ranking models taught by the state-of-the-art full interaction BERT CATmodel. Following our observation that different architec- tures converge to different scoring ranges, we proposed to optimize not the raw scores, but rather the margin between a pair of relevant and non-relevant passages with a Margin-MSE loss.",
+    "chunk_size": 984,
+    "word_count": 149,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 57,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_57",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "architec- tures converge to different scoring ranges, we proposed to optimize not the raw scores, but rather the margin between a pair of relevant and non-relevant passages with a Margin-MSE loss. We showed that this method outperforms a simple pointwise MSE loss. Further- more, we compared the performance of a single teacher model with an ensemble of large BERT CATmodels and find that in most cases using an ensemble of teachers is beneficial in the passage retrieval task. Trained with a teacher ensemble, single instances of efficient models even outperform their single instance teacher models with much more parameters and interaction capacity. We observed a drastic shift in the effectiveness-efficiency trade-off of our evaluated models towards more effectiveness for efficient models.",
+    "chunk_size": 795,
+    "word_count": 121,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 58,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_58",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "with much more parameters and interaction capacity. We observed a drastic shift in the effectiveness-efficiency trade-off of our evaluated models towards more effectiveness for efficient models. In addition to re-ranking models, we show our general distillation method to produce competitive effectiveness compared to specialized training techniques for the dual-encoder BERT DOT model in the nearest neighbor retrieval setting. We published our teacher training files, so the community can use them without significant changes to their setups. For future work we plan to combine our knowledge distilla- tion approach with other neural ranking training adaptations, such as curriculum learning or dynamic index sampling for end-to-end neural retrieval. REFERENCES  1 Payal Bajaj, Daniel Campos, Nick Craswell, Li Deng, Jianfeng Gao, Xiaodong Liu, Rangan Majumder, Andrew Mcnamara, Bhaskar Mitra, and Tri Nguyen. 2016. MS MARCO : A Human Generated MAchine Reading COmprehension Dataset. InProc.",
+    "chunk_size": 993,
+    "word_count": 141,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 59,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_59",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "Nick Craswell, Li Deng, Jianfeng Gao, Xiaodong Liu, Rangan Majumder, Andrew Mcnamara, Bhaskar Mitra, and Tri Nguyen. 2016. MS MARCO : A Human Generated MAchine Reading COmprehension Dataset. InProc. of NIPS. 2 Iz Beltagy, Matthew E Peters, and Arman Cohan. 2020. Longformer: The long- document transformer. arXiv preprint arXiv:2004. 05150 (2020). 3 Christopher JC Burges. 2010. From ranknet to lambdarank to lambdamart: An overview. MSR-Tech Report (2010). 4 Wei-Cheng Chang, Felix X Yu, Yin-Wen Chang, Yiming Yang, and Sanjiv Kumar. 2020. Pre-training tasks for embedding-based large-scale retrieval. In Proc. of ICLR. 5 Xuanang Chen, Ben He, Kai Hui, Le Sun, and Yingfei Sun. 2020. Simplified Tiny- BERT: Knowledge Distillation for Document Retrieval. arXiv:cs. IR 2009. 07531  6 Daniel Cohen, Scott M. Jordan, and W. Bruce Croft. 2019. Learning a Better Negative Sampling Policy with Deep Neural Networks for Search. In Proc. of ICTIR.",
+    "chunk_size": 939,
+    "word_count": 143,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 60,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_60",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "Retrieval. arXiv:cs. IR 2009. 07531  6 Daniel Cohen, Scott M. Jordan, and W. Bruce Croft. 2019. Learning a Better Negative Sampling Policy with Deep Neural Networks for Search. In Proc. of ICTIR. 7 Nick Craswell, Bhaskar Mitra, Emine Yilmaz, and Daniel Campos. 2019. Overview of the TREC 2019 deep learning track. In TREC. 8 Zhuyun Dai and Jamie Callan. 2020. Context-Aware Document Term Weighting for Ad-Hoc Search. In Proc. of WWW. 9 Mostafa Dehghani, Arash Mehrjou, Stephan Gouws, Jaap Kamps, and Bernhard Schölkopf. 2018. Fidelity-weighted learning. Proc. of ICLR (2018). 10  Mostafa Dehghani, Aliaksei Severyn, Sascha Rothe, and Jaap Kamps. 2017. Learn- ing to learn from weak supervision by full supervision. Proc. of NIPS Workshop on Meta-Learning (2017). 11  J. Devlin, M. Chang, K. Lee, and K. Toutanova. 2019. BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. In Proc. of NAACL.",
+    "chunk_size": 920,
+    "word_count": 142,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 61,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_61",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": " of NIPS Workshop on Meta-Learning (2017). 11  J. Devlin, M. Chang, K. Lee, and K. Toutanova. 2019. BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. In Proc. of NAACL. 12  Yingqi Qu Yuchen Ding, Jing Liu, Kai Liu, Ruiyang Ren, Xin Zhao, Daxiang Dong, Hua Wu, and Haifeng Wang. 2020. RocketQA: An Optimized Training Approach to Dense Passage Retrieval for Open-Domain Question Answering. arXiv preprint arXiv:2010. 08191 (2020). 13  Luyu Gao, Zhuyun Dai, and Jamie Callan. 2020. EARL: Speedup Transformer- based Rankers with Pre-computed Representation. arXiv preprint arXiv:2004. 13313 (2020). 14  Luyu Gao, Zhuyun Dai, and Jamie Callan. 2020. Understanding BERT Rankers Under Distillation. arXiv preprint arXiv:2007. 11088 (2020). 15  Geoffrey Hinton, Oriol Vinyals, and Jeff Dean. 2015. Distilling the knowledge in a neural network. arXiv preprint arXiv:1503. 02531 (2015). 16  Sebastian Hofstätter and Allan Hanbury. 2019. Let's measure run time.",
+    "chunk_size": 982,
+    "word_count": 142,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 62,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_62",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "Oriol Vinyals, and Jeff Dean. 2015. Distilling the knowledge in a neural network. arXiv preprint arXiv:1503. 02531 (2015). 16  Sebastian Hofstätter and Allan Hanbury. 2019. Let's measure run time. Extending the IR replicability infrastructure to include performance aspects. In Proc. of OSIRRC. 17  Sebastian Hofstätter, Hamed Zamani, Bhaskar Mitra, Nick Craswell, and Allan Hanbury. 2020. Local Self-Attention over Long Text for Efficient Document Retrieval. In Proc. of SIGIR. 18  Sebastian Hofstätter, Markus Zlabinger, and Allan Hanbury. 2020. Interpretable   Time-Budget-Constrained Contextualization for Re-Ranking. In Proc. of ECAI. 19  Shiyu Ji, Jinjin Shao, and Tao Yang. 2019. Efficient Interaction-based Neural Ranking with Locality Sensitive Hashing. In Proc of. WWW. 20  Xiaoqi Jiao, Yichun Yin, Lifeng Shang, Xin Jiang, Xiao Chen, Linlin Li, Fang Wang, and Qun Liu. 2019. Tinybert: Distilling bert for natural language understanding. arXiv preprint arXiv:1909. 10351 (2019).",
+    "chunk_size": 988,
+    "word_count": 138,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 63,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_63",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "Jiao, Yichun Yin, Lifeng Shang, Xin Jiang, Xiao Chen, Linlin Li, Fang Wang, and Qun Liu. 2019. Tinybert: Distilling bert for natural language understanding. arXiv preprint arXiv:1909. 10351 (2019). 21  Omar Khattab and Matei Zaharia. 2020. ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT. In Proc. of SIGIR. 22  Diederik P Kingma and Jimmy Ba. 2014. Adam: A method for stochastic opti- mization. arXiv preprint arXiv:1412. 6980 (2014). 23  Nikita Kitaev, Łukasz Kaiser, and Anselm Levskaya. 2020. Reformer: The Efficient Transformer. In Proc. of ICLR. 24  Zhenzhong Lan, Mingda Chen, Sebastian Goodman, Kevin Gimpel, Piyush Sharma, and Radu Soricut. 2019. Albert: A lite bert for self-supervised learning of language representations. arXiv preprint arXiv:1909. 11942 (2019). 25  Canjia Li, Andrew Yates, Sean MacAvaney, Ben He, and Yingfei Sun. 2020. PA- RADE: Passage Representation Aggregation for Document Reranking. arXiv preprint arXiv:2008.",
+    "chunk_size": 992,
+    "word_count": 143,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 64,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_64",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "arXiv:1909. 11942 (2019). 25  Canjia Li, Andrew Yates, Sean MacAvaney, Ben He, and Yingfei Sun. 2020. PA- RADE: Passage Representation Aggregation for Document Reranking. arXiv preprint arXiv:2008. 09093 (2020). 26  Sheng-Chieh Lin, Jheng-Hong Yang, and Jimmy Lin. 2020. Distilling Dense Representations for Ranking using Tightly-Coupled Teachers. arXiv preprint arXiv:2010. 11386 (2020). 27  Wenhao Lu, Jian Jiao, and Ruofei Zhang. 2020. TwinBERT: Distilling knowl- edge to twin-structured BERT models for efficient retrieval. arXiv preprintarXiv:2002. 06275 (2020). 28  Yi Luan, Jacob Eisenstein, Kristina Toutanova, and Michael Collins. 2020. Sparse, Dense, and Attentional Representations for Text Retrieval. arXiv preprint arXiv:2005. 00181 (2020). 29  Sean MacAvaney, Franco Maria Nardini, Raffaele Perego, Nicola Tonellotto, Nazli Goharian, and Ophir Frieder. 2020. Efficient Document Re-Ranking for Trans- formers by Precomputing Term Representations. arXiv preprint arXiv:2004. 14255 (2020).",
+    "chunk_size": 1000,
+    "word_count": 130,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 65,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_65",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "Perego, Nicola Tonellotto, Nazli Goharian, and Ophir Frieder. 2020. Efficient Document Re-Ranking for Trans- formers by Precomputing Term Representations. arXiv preprint arXiv:2004. 14255 (2020). 30  Sean MacAvaney, Franco Maria Nardini, Raffaele Perego, Nicola Tonellotto, Nazli Goharian, and Ophir Frieder. 2020. Training Curricula for Open Domain Answer Re-Ranking. In Proc. of SIGIR. 31  Sean MacAvaney, Andrew Yates, Arman Cohan, and Nazli Goharian. 2019. CEDR: Contextualized Embeddings for Document Ranking. In Proc. of SIGIR. 32  Sean MacAvaney, Andrew Yates, Kai Hui, and Ophir Frieder. 2019. Content-Based Weak Supervision for Ad-Hoc Re-Ranking. In Proc. of SIGIR. 33  Joel Mackenzie, Zhuyun Dai, Luke Gallagher, and Jamie Callan. 2020. Efficiency implications of term weighting for passage retrieval. In Proc. of SIGIR. 34  Christopher D Manning, Hinrich Schütze, and Prabhakar Raghavan. 2008. Intro- duction to information retrieval. Cambridge university press.",
+    "chunk_size": 973,
+    "word_count": 134,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 66,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_66",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": " term weighting for passage retrieval. In Proc. of SIGIR. 34  Christopher D Manning, Hinrich Schütze, and Prabhakar Raghavan. 2008. Intro- duction to information retrieval. Cambridge university press. 35  Bhaskar Mitra, Sebastian Hofstatter, Hamed Zamani, and Nick Craswell. 2020. Conformer-Kernel with Query Term Independence for Document Retrieval. arXiv preprint arXiv:2007. 10434 (2020). 36  Rodrigo Nogueira and Kyunghyun Cho. 2019. Passage Re-ranking with BERT. arXiv preprint arXiv:1901. 04085 (2019). 37  Adam Paszke, Sam Gross, Soumith Chintala, Gregory Chanan, Edward Yang, Zachary DeVito, Zeming Lin, Alban Desmaison, Luca Antiga, and Adam Lerer. 2017. Automatic differentiation in PyTorch. In Proc. of NIPS-W. 38  Victor Sanh, Lysandre Debut, Julien Chaumond, and Thomas Wolf. 2019. Dis- tilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter. arXiv preprint arXiv:1910. 01108 (2019). 39  Siqi Sun, Yu Cheng, Zhe Gan, and Jingjing Liu. 2019.",
+    "chunk_size": 973,
+    "word_count": 137,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 67,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_67",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "Thomas Wolf. 2019. Dis- tilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter. arXiv preprint arXiv:1910. 01108 (2019). 39  Siqi Sun, Yu Cheng, Zhe Gan, and Jingjing Liu. 2019. Patient knowledge distilla- tion for bert model compression. arXiv preprint arXiv:1908. 09355 (2019). 40  Jiaxi Tang and Ke Wang. 2018. Ranking distillation: Learning compact ranking models with high performance for recommender system. In Proc. of SIGKDD. 41  Amir Vakili Tahami, Kamyar Ghajar, and Azadeh Shakery. 2020. Distilling Knowledge for Fast Retrieval-based Chat-bots. In Proc. of SIGIR. 42  Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue, Anthony Moi, Pierric Cistac, Tim Rault, Rémi Louf, Morgan Funtowicz, et al. 2019. HuggingFace's Transformers: State-of-the-art Natural Language Processing. ArXiv (2019), arXiv 1910. 43  Chenyan Xiong, Zhuyun Dai, Jamie Callan, Zhiyuan Liu, and Russell Power. 2017. End-to-End Neural Ad-hoc Ranking with Kernel Pooling.",
+    "chunk_size": 994,
+    "word_count": 141,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 68,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_68",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "Natural Language Processing. ArXiv (2019), arXiv 1910. 43  Chenyan Xiong, Zhuyun Dai, Jamie Callan, Zhiyuan Liu, and Russell Power. 2017. End-to-End Neural Ad-hoc Ranking with Kernel Pooling. In Proc. of SIGIR. 44  Lee Xiong, Chenyan Xiong, Ye Li, Kwok-Fung Tang, Jialin Liu, Paul Bennett, Junaid Ahmed, and Arnold Overwijk. 2020. Approximate Nearest Neigh- bor Negative Contrastive Learning for Dense Text Retrieval. arXiv preprint arXiv:2007. 00808 (2020). 45  Ming Yan, Chenliang Li, et al. 2020. IDST at TREC 2019 Deep Learning Track: Deep Cascade Ranking with Generation-based Document Expansion and Pre- trained Language Modeling. In TREC. 46  Peilin Yang, Hui Fang, and Jimmy Lin. 2017. Anserini: Enabling the use of Lucene for information retrieval research. In Proc. of SIGIR. 47  Zeynep Akkalyoncu Yilmaz, Wei Yang, Haotian Zhang, and Jimmy Lin. 2019. Cross-domain modeling of sentence-level evidence for document retrieval. In Proc. of EMNLP-IJCNLP.",
+    "chunk_size": 960,
+    "word_count": 142,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 69,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_69",
+    "created_at": "2025-07-22T23:16:25.485108"
+  },
+  {
+    "text": "In Proc. of SIGIR. 47  Zeynep Akkalyoncu Yilmaz, Wei Yang, Haotian Zhang, and Jimmy Lin. 2019. Cross-domain modeling of sentence-level evidence for document retrieval. In Proc. of EMNLP-IJCNLP. 48  Yuyu Zhang, Ping Nie, Xiubo Geng, Arun Ramamurthy, Le Song, and Daxin Jiang. 2020. DC-BERT: Decoupling Question and Document for Efficient Contextual Encoding. arXiv preprint arXiv:2002. 12591 (2020).",
+    "chunk_size": 398,
+    "word_count": 57,
+    "document_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation",
+    "chunk_index": 70,
+    "chunk_id": "2010.02666-Improving Efficient Neural Ranking Models with Cross-Architecture Knowledge Distillation_chunk_70",
+    "created_at": "2025-07-22T23:16:25.485108"
+  }
+]

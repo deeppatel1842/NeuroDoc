@@ -1,0 +1,20 @@
+{
+  "document_id": "2310.11511-Self-RAG- Learning to Retrieve- Generate- and Critique through Self-Reflection",
+  "filename": "2310.11511_Self-RAG_ Learning to Retrieve_ Generate_ and Critique through Self-Reflection.pdf",
+  "session_id": "setup",
+  "content_hash": "d9eaa1398abac0df67a9d0933a5bf8b6d9d83d2e72da2a486073cd842dd52978",
+  "text_hash": "7c0de0026a75b82afe187d94d26260c1f4fe4bc18090e203be82e408f43105b2",
+  "file_size": 1405127,
+  "text_length": 105305,
+  "chunk_count": 144,
+  "processed_at": "2025-07-22T23:17:22.827104",
+  "processing_config": {
+    "chunk_size": 1000,
+    "chunk_overlap": 200
+  },
+  "extraction_metadata": {
+    "word_count": 16102,
+    "character_count": 105305,
+    "estimated_pages": 52
+  }
+}

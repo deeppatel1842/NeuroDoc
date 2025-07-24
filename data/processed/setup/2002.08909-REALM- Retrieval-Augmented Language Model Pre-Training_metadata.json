@@ -1,0 +1,20 @@
+{
+  "document_id": "2002.08909-REALM- Retrieval-Augmented Language Model Pre-Training",
+  "filename": "2002.08909_REALM_ Retrieval-Augmented Language Model Pre-Training.pdf",
+  "session_id": "setup",
+  "content_hash": "0ec1a7ab3de5514c6d3baa8af0322816d4ee7cd4c14b9f2c450cbc9da9e6b363",
+  "text_hash": "35544c4266a92868897f20f12de0b56c4f3708f82608d361bf8ace5fd31bec79",
+  "file_size": 419037,
+  "text_length": 50469,
+  "chunk_count": 70,
+  "processed_at": "2025-07-22T23:15:57.722818",
+  "processing_config": {
+    "chunk_size": 1000,
+    "chunk_overlap": 200
+  },
+  "extraction_metadata": {
+    "word_count": 7963,
+    "character_count": 50469,
+    "estimated_pages": 25
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "session_id": "phase2_test_session",
+  "document_id": "test_document",
+  "created_at": "2025-07-22T18:10:49.838491",
+  "embedding_dimension": 384,
+  "chunk_count": 3,
+  "metadata": {},
+  "chunks": [
+    {
+      "chunk_id": "test_1",
+      "text": "Machine learning is a method of data analysis that automates analytical model building.",
+      "metadata": {
+        "source": "test_doc_1",
+        "page": 1
+      }
+    },
+    {
+      "chunk_id": "test_2",
+      "text": "Deep learning is part of a broader family of machine learning methods based on artificial neural networks.",
+      "metadata": {
+        "source": "test_doc_1",
+        "page": 2
+      }
+    },
+    {
+      "chunk_id": "test_3",
+      "text": "Natural language processing (NLP) is a subfield of linguistics, computer science, and artificial intelligence.",
+      "metadata": {
+        "source": "test_doc_2",
+        "page": 1
+      }
+    }
+  ]
+}

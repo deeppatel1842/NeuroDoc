@@ -1,0 +1,20 @@
+{
+  "document_id": "9d2e3ae8-a481-4161-92dc-22081b1f0190",
+  "filename": "Eval_1.pdf",
+  "session_id": "f01e4d41-779c-40c3-b182-fc9eea4c3042",
+  "content_hash": "d9eaa1398abac0df67a9d0933a5bf8b6d9d83d2e72da2a486073cd842dd52978",
+  "text_hash": "7c0de0026a75b82afe187d94d26260c1f4fe4bc18090e203be82e408f43105b2",
+  "file_size": 1405127,
+  "text_length": 105305,
+  "chunk_count": 144,
+  "processed_at": "2025-07-23T20:56:24.314330",
+  "processing_config": {
+    "chunk_size": 1000,
+    "chunk_overlap": 200
+  },
+  "extraction_metadata": {
+    "word_count": 16102,
+    "character_count": 105305,
+    "estimated_pages": 52
+  }
+}

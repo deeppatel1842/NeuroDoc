@@ -1,0 +1,623 @@
+[
+  {
+    "text": "Text and Code Embeddings by Contrastive Pre-Training ArvindNeelakantan 1 TaoXu 1 RaulPuri1 AlecRadford1 JesseMichaelHan1 JerryTworek1 QimingYuan1 NikolasTezak1 JongWookKim1 ChrisHallacy1 JohannesHeidecke1 PranavShyam1 BorisPower1 TynaEloundouNekoul1 GirishSastry1 GretchenKrueger1 DavidSchnurr1 FelipePetroskiSuch1 KennyHsu1 MadeleineThompson1 TabarakKhan1 TokiSherbakov1 JoanneJang1 PeterWelinder1 LilianWeng1 Abstract 70 Text embeddings are useful features in many applications such as semantic search and com- 68 puting text similarity. Previous work typically trainsmodelscustomizedfordifferentusecases, 66 varying in dataset choice, training objective and 64 model architecture. In this work, we show that contrastive pre-training on unsupervised data at 62 scaleleadstohighqualityvectorrepresentations 60 oftextandcode. Thesameunsupervisedtextem- S-300M M-1.",
+    "chunk_size": 864,
+    "word_count": 88,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 0,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_0",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "architecture. In this work, we show that contrastive pre-training on unsupervised data at 62 scaleleadstohighqualityvectorrepresentations 60 oftextandcode. Thesameunsupervisedtextem- S-300M M-1. 2B I-6B XL-175B Model Size beddingsthatachievenewstate-of-the-artresults inlinear-probeclassificationalsodisplayimpres- sive semantic search capabilities and sometimes evenperformcompetitivelywithfine-tunedmod- els. Onlinear-probeclassificationaccuracyaver- agingover7tasks, ourbestunsupervisedmodel achievesarelativeimprovementof4 and1. 8  over previous best unsupervised and supervised text embedding models respectively. The same text embeddings when evaluated on large-scale semantic search attains a relative improvement of 23. 4 , 14. 7 , and 10. 6  over previous best unsupervised methods on MSMARCO, Natural Questions and TriviaQA benchmarks, respec- tively. Similarly to text embeddings, we train codeembeddingmodelson(text,code)pairs,ob- taininga20.",
+    "chunk_size": 954,
+    "word_count": 97,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 1,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_1",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "previous best unsupervised methods on MSMARCO, Natural Questions and TriviaQA benchmarks, respec- tively. Similarly to text embeddings, we train codeembeddingmodelson(text,code)pairs,ob- taininga20. 8 relativeimprovementoverprior bestworkoncodesearch. 1. Introduction Deep unsupervised learning with generative and embed- ding models has seen dramatic success in the past few years. Generativemodels(Petersetal. ,2018;Raffeletal. , 2019; van den Oord et al. , 2016; Ramesh et al. , 2021; Brown et al. , 2020; Chen et al. , 2021) are trained to max-  Equal contribution 1OpenAI. Correspondence to: Arvind Neelakantan arvind openai. com. ecnamrofreP Average performance vs model size Figure1. Average performance of unsupervised cpt-text modelsofdifferentsizesacross22tasksconsistingoflinear-probe classification,textsearch,andsentencesimilaritytasks. imize the likelihood of observed data while embedding modelsaretrainedtodistinguishobserveddatafromnoise (Sohn, 2016; van den Oord et al.",
+    "chunk_size": 987,
+    "word_count": 114,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 2,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_2",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "classification,textsearch,andsentencesimilaritytasks. imize the likelihood of observed data while embedding modelsaretrainedtodistinguishobserveddatafromnoise (Sohn, 2016; van den Oord et al. , 2018; Radford et al. , 2021;Jiaetal. ,2021;Gaoetal. ,2021;Izacardetal. ,2021). Generative models have been shown to produce realistic contentandbenefitmanydownstreamapplications,reduc- ing the need for labeled training datasets. In generative models, the information about the input is typically dis- tributed over multiple hidden states of the model. While some generative models (Kingma   Welling, 2014; Kiros et al. , 2015) can learn a single representation of the in- put,mostautoregressiveTransformer(Vaswanietal. ,2017) modelsdonot(Raffeletal. ,2019;Brownetal. ,2020;Chen etal. ,2021;Rameshetal. ,2021). However,learningsucha representation(orembedding)isnecessaryformanytasks.",
+    "chunk_size": 877,
+    "word_count": 92,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 3,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_3",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": ",2017) modelsdonot(Raffeletal. ,2019;Brownetal. ,2020;Chen etal. ,2021;Rameshetal. ,2021). However,learningsucha representation(orembedding)isnecessaryformanytasks. Systems that search over millions or billions of items re- quireeachentrytobeembeddedasadenserepresentation andbuildanindexinadvancetosavecomputationalcosts at query time. These embeddings are useful features for classification tasks and can also enable data visualization applicationsviatechniquessuchasclustering. Embedding modelsareexplicitlyoptimizedtolearnalowdimensional representation that captures the semantic meaning of the input (Radford et al. , 2021; Jia et al. , 2021; Giorgi et al. , 2020;Gaoetal. ,2021;Izacardetal. ,2021). 2202 naJ 42  LC. sc  1v50001. 1022:viXra TextandCodeEmbeddingsbyContrastivePre-Training In this work, we train embedding models using a con- fine-tunedmodels. trastive learning objective with in-batch negatives (Sohn, Next,wetraincodeembeddingmodels(cpt-code)using 2016;Yihetal.",
+    "chunk_size": 983,
+    "word_count": 95,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 4,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_4",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "In this work, we train embedding models using a con- fine-tunedmodels. trastive learning objective with in-batch negatives (Sohn, Next,wetraincodeembeddingmodels(cpt-code)using 2016;Yihetal. ,2011)onunlabeleddata. Theinputisen- the same recipe. Our models learn via (text, code) pairs, coded with a Transformer encoder (Vaswani et al. , 2017) extracted from open source code. We evaluate our model and we leverage naturally occurring paired data to con- onCodeSearchNet(Husainetal. ,2020),acommonlyused structtrainingdatawithnoexplicitlabels. Textembedding codesearchbenchmark,wherethetaskistofindthemost models are trained on paired text data where we consider relevantcodesnippetgivenanaturallanguagequery. Our neighboringpiecesoftextontheInternetaspositivepairs. models achieve new state-of-the-art results with a 20. 8  Code embedding models treat the top-level docstring in a relative improvement over the previous best result (Guo function along with its implementation as a (text, code) et al.",
+    "chunk_size": 1000,
+    "word_count": 115,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 5,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_5",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "results with a 20. 8  Code embedding models treat the top-level docstring in a relative improvement over the previous best result (Guo function along with its implementation as a (text, code) et al. , 2021). Unlike text embedding models, we observe pair. The training signal of the contrastive objective on noperformanceimprovementoncodesearchwhenincreas- itsownisnotsufficienttolearnusefulrepresentationsand ingthenumberofparametersofcpt-codefrom300Mto weovercomethisbyinitializingourmodelwithotherpre- 1. 2B. trainedmodels(Brownetal. ,2020;Chenetal. ,2021). Fi- nally, we find that it is critical to use a sufficiently large Finally, we experiment with fine-tuning our models on batch to achieve the optimal performance. We show that several supervised datasets and study the transfer learn- this simple recipe combining pre-trained model initializa- ing performance.",
+    "chunk_size": 869,
+    "word_count": 106,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 6,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_6",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "models on batch to achieve the optimal performance. We show that several supervised datasets and study the transfer learn- this simple recipe combining pre-trained model initializa- ing performance. When fine-tuned on NLI (Natural Lan- tion, large-batchcontrastivelearningandtrainingatscale, guageInference)datasets,weseeafurtherboostinlinear- canproducetextandcodeembeddingsthatpossessabroad probeclassification,outperformingthepreviousbesttrans- rangeofcapabilities. fer method (Gao et al. , 2021) by 2. 2. On SST-2 senti- ment classification (Socher et al. , 2013), we find that our We train a series of unsupervised text embedding mod- representationsaresufficientlydescriptivethatevenasim- els (cpt-text) of different sizes, ranging from 300M plek-NNclassifierachievesresultscomparabletoalinear- to 175B parameters, and observe a consistent perfor- probeclassifier.",
+    "chunk_size": 870,
+    "word_count": 92,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 7,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_7",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "els (cpt-text) of different sizes, ranging from 300M plek-NNclassifierachievesresultscomparabletoalinear- to 175B parameters, and observe a consistent perfor- probeclassifier. Interestingly, zero-shotperformancewith mance improvement with increasing model sizes (Figure ourembeddingsoutperformsthesupervisedneuralnetwork 1). On classification accuracy averaging across 7 linear- models introduced along with the release of the SST-2 probe classification tasks in SentEval (Conneau   Kiela, dataset. Wealsofine-tunetheunsupervisedmodelonMS- 2018),ourlargestunsupervisedmodelachievesnewstate- MARCOandevaluateitonasuiteofzero-shotsearchtasks of-the-art results with a relative improvement of 4  and intheBEIRbenchmark(Thakuretal. ,2021). Inthetrans- 1. 8  over the previous best unsupervised (Giorgi et al. , fer setting, our models achieve a 5. 2  relative improve- 2020) and supervised (Gao et al. , 2021) text embedding ment over previous methods (Izacard et al. , 2021) and is models,respectively.",
+    "chunk_size": 999,
+    "word_count": 111,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 8,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_8",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "al. , fer setting, our models achieve a 5. 2  relative improve- 2020) and supervised (Gao et al. , 2021) text embedding ment over previous methods (Izacard et al. , 2021) and is models,respectively. comparable even with methods (Santhanam et al. , 2021; Textembeddinginpreviousworkwasstudiedunderdiffer- Formal et al. , 2021; Wang et al. , 2020) that demand sub- entdomains,varyingindata,trainingobjectiveandmodel stantiallymorecomputationattesttime. architecture. Precisely, sentence embedding (Reimers   Gurevych, 2019; Gao et al. , 2021; Giorgi et al. , 2020) 2. Approach and neural information retrieval (Lee et al. ; Guu et al. , 2020; Karpukhin et al. , 2020a; Sachan et al. , 2021; Izac- Our models are trained with a contrastive objective on ard et al. , 2021) have remained different research topics paireddata. Inthissection,wepresentmoredetailsonthe evaluatedondistinctbenchmarks,eventhoughbothaimto modelarchitectureandthetrainingobjective.",
+    "chunk_size": 952,
+    "word_count": 125,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 9,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_9",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "et al. , 2021) have remained different research topics paireddata. Inthissection,wepresentmoredetailsonthe evaluatedondistinctbenchmarks,eventhoughbothaimto modelarchitectureandthetrainingobjective. Thetraining learnhigh-qualitytextrepresentation. However,wefindthe setconsistsofpairedsamples, (x ,y ) N ,where(x ,y ) i i i 1 i i same model that achieves good performance on sentence corresponds to a positive example pair, indicating that x i embedding benchmarks, as discussed above, is also able andy aresemanticallysimilarorcontextuallyrelevant. i to obtain impressive results on large-scale information re- trieval. WhenevaluatedontheMSMARCOpassagerank- 2. 1. Model ingtask(Nguyenetal. ,2016)tosearchover4Mpassages, Givenatrainingpair(x,y),aTransformer(Vaswanietal. , cpt-textgetsarelativeimprovementof23. 4 overpre- 2017)encoderE isusedtoprocessxandyindependently. vious best unsupervised methods (Robertson, 2009).",
+    "chunk_size": 921,
+    "word_count": 87,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 10,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_10",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": ", cpt-textgetsarelativeimprovementof23. 4 overpre- 2017)encoderE isusedtoprocessxandyindependently. vious best unsupervised methods (Robertson, 2009). On The encoder maps the input to a dense vector representa- the task of searching on 21M documents from Wikipedia, tionorembedding(Figure2). Weinserttwospecialtoken cpt-textobtainsarelativeimprovementof14. 7 ,and delimiters, SOS and EOS ,tothestartandendofthe 10. 6 overpreviousunsupervisedmethods(Izacardetal. , inputsequencerespectively. Thehiddenstatefromthelast 2021) for Natural Questions (Kwiatkowski et al. , 2019) layercorrespondingtothespecialtoken EOS isconsid- and TriviaQA (Joshi et al. , 2017), respectively. On Triv- eredastheembeddingoftheinputsequence. iaQA, our unsupervised method is even competitive with TextandCodeEmbeddingsbyContrastivePre-Training Model Parameters EmbedDimensions Batchsize S 300M 1024 12288 M 1. 2B 2048 6912 I 6B 4096 5896 ENCODER XL 175B 12288 4976 ENCODER Table1.",
+    "chunk_size": 958,
+    "word_count": 104,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 11,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_11",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "with TextandCodeEmbeddingsbyContrastivePre-Training Model Parameters EmbedDimensions Batchsize S 300M 1024 12288 M 1. 2B 2048 6912 I 6B 4096 5896 ENCODER XL 175B 12288 4976 ENCODER Table1. Batchsizeusedtotrainthemodelsofdifferentsizes. SOS  INPUT  EOS  usedforunsupervisedrepresentationlearninginpriorwork Figure2. TheencoderEmapsinputxtoembeddingv. Special (Radford et al. , 2021; Jia et al. , 2021; Chen et al. , 2020; x tokens,  SOS  and  EOS , are appended to the start and end Izacard et al. , 2021). For each example in a mini-batch of the input sequence respectively. The last layer hidden state ofM examples,theother(M  1)inthebatchareusedas correspondingtothetoken EOS isextractedastheembedding negativeexamples. Theusageofin-batchnegativesenables oftheinputsequence. re-useofcomputationbothintheforwardandthebackward passmakingtraininghighlyefficient.",
+    "chunk_size": 861,
+    "word_count": 94,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 12,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_12",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "EOS isextractedastheembedding negativeexamples. Theusageofin-batchnegativesenables oftheinputsequence. re-useofcomputationbothintheforwardandthebackward passmakingtraininghighlyefficient. Thelogitsforone batchisaM M matrix,whereeachentrylogit(x ,y )is i j givenby, logit(x ,y ) sim(x ,y ) exp(τ), ENCODER i j i j  (i,j),i,j   1,2,. ,M  ENCODER  SOS  INPUT  EOS  whereτ isatrainabletemperatureparameter. Only entries on the diagonal of the matrix are considered positiveexamples. Thefinaltraininglossisthesumofthe cross entropy losses on the row and the column direction, Figure3. The encoder E maps inputs x and y, to embeddings, asdescribedinthefollowingnumpystylepseudocode. v andv independently. Thesimilarityscorebetweenxandy x y labels   np. arange(M) isdefinedasthecosinesimilaritybetweenthesetwoembedding I r   cross entropy(logits, labels, axis O) vectors.",
+    "chunk_size": 864,
+    "word_count": 89,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 13,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_13",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "v andv independently. Thesimilarityscorebetweenxandy x y labels   np. arange(M) isdefinedasthecosinesimilaritybetweenthesetwoembedding I r   cross entropy(logits, labels, axis O) vectors. I c   cross entropy(logits, labels, axis 1) loss   (I r   I c)   2 The Transformerencoder mapsthe input, x and y, to em- We initialize our models with pre-trained generative lan- beddings,v andv respectivelyandthesimilaritybetween x y guage models. cpt-text is initialized with GPT mod- two inputs is quantified by the cosine similarity between els(Brownetal. ,2020)andcpt-codeisinitializedwith theirembeddings,v andv (Figure3). x y Codex models (Chen et al. , 2021). When fine-tuning our models (Section 3), the supervised training data like NLI v x  E( SOS  x  x  EOS  x ) datasets contain explicit negative examples and they are v  E( SOS   y  EOS  ) usedalongwiththein-batchnegatives. y y y v  v sim(x,y)  x y (cid:107)v (cid:107) (cid:107)v (cid:107) 3.",
+    "chunk_size": 946,
+    "word_count": 133,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 14,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_14",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "  x  x  EOS  x ) datasets contain explicit negative examples and they are v  E( SOS   y  EOS  ) usedalongwiththein-batchnegatives. y y y v  v sim(x,y)  x y (cid:107)v (cid:107) (cid:107)v (cid:107) 3. Results x y where   is an operation to concatenate two strings to- Ourmodelsaretrainedonnaturallyoccurringpaireddata. gether. We found that using different delimiters leads to cpt-textmodelsaretrainedonInternetdatawithneigh- more stable training. For x, we use ' ' as  SOS  x and boringpiecesoftextaspositivepairsforthecontrastiveob- ' ' as  EOS  x , while we use ' ' and ' ' as  SOS  y and jective. Thecodeembeddingcpt-codemodelsuse(text,  EOS  y respectivelyfory. code)pairsextractedfromopensourcecode. Asdiscussed in Section 3. 4. 1, sufficiently large batch size is crucial to 2. 2. TrainingObjective achievegoodperformancewithoursetup. Table1liststhe batchsizesusedtotrainthemodelsofdifferentsizes. Thepairedsamplesinthetrainingsetarecontrastedagainst in-batch negatives (Yih et al.",
+    "chunk_size": 988,
+    "word_count": 119,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 15,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_15",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "achievegoodperformancewithoursetup. Table1liststhe batchsizesusedtotrainthemodelsofdifferentsizes. Thepairedsamplesinthetrainingsetarecontrastedagainst in-batch negatives (Yih et al. , 2011; Sohn, 2016). Con- Weevaluateourtextembeddingmodelsonabroadrangeof trastive learning with in-batch negatives has been widely tasks: linear-probe classification, sentence similarity, and TextandCodeEmbeddingsbyContrastivePre-Training semantic search. While sentence embedding (Reimers   3. 1. 3. SENTENCESIMILARITY Gurevych,2019;Gaoetal. ,2021;Giorgietal. ,2020)meth- On sentence similarity tasks in SentEval, we find that our odsreportresultsonlyonembeddingbenchmarksandneu- models perform worse than previous SOTA methods (Ta- ral information retrieval methods (Lee et al. ; Guu et al. , ble4). Sentencesimilarityisnotacompletelywell-defined 2020;Karpukhinetal. ,2020a;Sachanetal. ,2021;Izacard downstream task (e. g. are the sentences, 'Jack loves Jill' etal.",
+    "chunk_size": 951,
+    "word_count": 90,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 16,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_16",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": " (Lee et al. ; Guu et al. , ble4). Sentencesimilarityisnotacompletelywell-defined 2020;Karpukhinetal. ,2020a;Sachanetal. ,2021;Izacard downstream task (e. g. are the sentences, 'Jack loves Jill' etal. ,2021)reportresultsonlyonsearchbenchmarks, we and 'Mary loves chocolates', similar. ). 1,2 For example, usethesameunsupervisedmodelacrossallthesetasks. Goodman (1972) argue that two objects can be infinitely similar or dissimilar (Vervaeke et al. , 2012). A possible 3. 1. TextEmbedding explanation for why our models perform better than prior The SentEval benchmark (Conneau   Kiela, 2018) is workonsearchandclassificationbutnotonthesetasksis widely adopted to assess the quality of sentence embed- thatourmodelsmightnotbeoptimizedforthespecificdef- dings,consistingofabroadcollectionoftasksinthecate- inition used by these sentence similarity benchmarks. It goriesoflinear-probeclassificationandsentencesimilarity, isimportanttonotethatpreviousembeddingsearchmeth- andweusethesametoevaluateours.",
+    "chunk_size": 998,
+    "word_count": 97,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 17,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_17",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "inition used by these sentence similarity benchmarks. It goriesoflinear-probeclassificationandsentencesimilarity, isimportanttonotethatpreviousembeddingsearchmeth- andweusethesametoevaluateours. odsdonotreportperformanceonsentencesimilaritytasks (Karpukhinetal. ,2020a;Sachanetal. ,2021;Izacardetal. , 3. 1. 1. LINEARPROBECLASSIFICATION 2021). More discussion on this phenomenon is presented inSection3. 4. 2. Whenevaluatedonlinear-probeclassification, theembed- dings are used as features to train a linear classifier to 3. 2. TextSearch solve a variety of downstream tasks. The results in Ta- ble 2 demonstrate a clear advantage of larger model sizes Previous work on training embedding methods for search producing better features for improved classification per- typically requires fine-tuning on a particular text search formance. Intransferlearningsetup,wefine-tuneunsuper- dataset (Karpukhin et al. , 2020a; Sachan et al. , 2021; Qu visedcpt-textmodelsonSNLI(Bowmanetal. ,2015) et al. , 2021).",
+    "chunk_size": 1000,
+    "word_count": 110,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 18,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_18",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": " a particular text search formance. Intransferlearningsetup,wefine-tuneunsuper- dataset (Karpukhin et al. , 2020a; Sachan et al. , 2021; Qu visedcpt-textmodelsonSNLI(Bowmanetal. ,2015) et al. , 2021). It is also common to have a multi-step andMNLI(Williamsetal. ,2018)datasetsusingentailment setupwherefine-tunedmodelsrelyonanexpensivequery pairsaspositiveexamplesandcontradictionpairsasnega- anddocumentcross-attentionencoderinthefinalstep(Qu tiveexamples. Onbothunsupervisedlearningandtransfer et al. , 2021; Wang et al. , 2020). In contrast, we push the learningsettings,weachievestate-of-the-artresults. limits of using a single embedding model for large-scale semanticsearch. 3. 1. 2. ZERO-SHOTANDk-NNCLASSIFICATION 3. 2. 1. LARGE-SCALESEARCH In this section, we discuss results using zero-shot classifi- cation and k-nearest neighbor classification on the SST-2 First, we evaluate our models on several large-scale text binary sentiment classification task (Socher et al. , 2013).",
+    "chunk_size": 986,
+    "word_count": 107,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 19,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_19",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "zero-shot classifi- cation and k-nearest neighbor classification on the SST-2 First, we evaluate our models on several large-scale text binary sentiment classification task (Socher et al. , 2013). search benchmarks. MSMARCO (Nguyen et al. , 2016) We experiment with 6B (I) cpt-text model fine-tuned requires the model to search over 4M documents while onNLIdataforthisstudy. Inthefirstzero-shotexperiment, Natural Questions (NQ) (Kwiatkowski et al. , 2019) and eachinputtextisassignedwithoneofthetwolabels('pos- TriviaQA (Joshi et al. , 2017) involve searching over 21M itive', 'negative') based on which label has its embedding Wikipedia documents. We use the FAISS library (John- closesttotheinputtextembedding. Theperformancecan sonetal. ,2019)tobuildthevectorindicesforapproximate befurtherimprovedbyprompting,whereweuseasimple k-nearest neighbor search.",
+    "chunk_size": 858,
+    "word_count": 100,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 20,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_20",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "FAISS library (John- closesttotheinputtextembedding. Theperformancecan sonetal. ,2019)tobuildthevectorindicesforapproximate befurtherimprovedbyprompting,whereweuseasimple k-nearest neighbor search. The same unsupervised model labeldescription,'thisisanexampleofapositive negative discussed previously achieves impressive performance on movie review. ', instead of a single word. This zero-shot semantic search. Table 5 demonstrates that cpt-text usage of embeddings is novel compared to prior work on outperforms prior unsupervised approaches by a big mar- embeddingsand itisinteresting tonotethat ourzero-shot gin and larger model sizes consistently lead to improved resultsarebetterthanthesupervisedneuralnetworkresults performance. Surprisingly,onTriviaQA,ourmodeliseven reportedalongwiththereleaseofthedataset(Socheretal. , competitivewithfine-tunedmodels. 2013). In the k-NN classification experiment, given an 1https:  twitter.",
+    "chunk_size": 933,
+    "word_count": 87,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 21,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_21",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "Surprisingly,onTriviaQA,ourmodeliseven reportedalongwiththereleaseofthedataset(Socheretal. , competitivewithfine-tunedmodels. 2013). In the k-NN classification experiment, given an 1https:  twitter. com yoavgo status  input text, the prediction is the majority label among 256 1431299645570011142 trainingexamplesclosesttothetestinputintheembedding 2https:  twitter. com yoavgo status  space. As shown in Table 3, the k-NN classifier without 1483565266575540225. s 20 any task-specific tuning of trainable parameters achieves resultscomparabletoalinearclassifier. TextandCodeEmbeddingsbyContrastivePre-Training MR CR SUBJ MPQA SST TREC MRPC Avg. Unsupervised BERT(Devlinetal. ,2019) 78. 7 86. 2 94. 4 88. 7 84. 4 92. 8 69. 4 84. 9 SimCSE(Gaoetal. ,2021) 84. 7 88. 6 95. 4 87. 5 89. 5 95. O 72. 4 87. 6 DECLUTR(Giorgietal. ,2020) 85. 2 90. 7 95. 8 88. 5 90. O 93. 2 74. 6 88. 3 cpt-textS 87. 1 90. 1 94. 9 88. 3 91. 8 95. 2 71. 6 88. 4 cpt-textM 89. O 90. 9 96. 7 89. 6 93. 9 96. 6 73. 6 89.",
+    "chunk_size": 990,
+    "word_count": 152,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 22,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_22",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "4 87. 6 DECLUTR(Giorgietal. ,2020) 85. 2 90. 7 95. 8 88. 5 90. O 93. 2 74. 6 88. 3 cpt-textS 87. 1 90. 1 94. 9 88. 3 91. 8 95. 2 71. 6 88. 4 cpt-textM 89. O 90. 9 96. 7 89. 6 93. 9 96. 6 73. 6 89. 9 cpt-textL 90. 6 92. 6 97. O 90. 6 95. 3 97. O 73. 6 90. 9 cpt-textXL 92. 2 93. 5 97. 4 91. 5 96. 2 97. 4 74. 1 91. 8 TransferfromNLIdata SBERT(Reimers Gurevych,2019) 84. 9 90. 1 94. 5 90. 3 90. 7 87. 4 75. 9 87. 7 SimCSE(Gaoetal. ,2021) 88. 4 92. 5 95. 2 90. 1 93. 3 93. 8 77. 7 90. 2 cpt-textS 87. 3 91. O 94. 6 90. 5 91. 4 95. O 75. 6 89. 3 cpt-textM 89. 8 92. 7 95. 7 91. 3 95. 3 96. 6 76. 5 91. 1 cpt-textL 90. 8 93. 5 96. 2 91. 2 95. 7 96. O 76. 9 91. 5 cpt-textXL 92. 4 93. 9 97. O 91. 8 95. 8 96. 4 78. 1 92. 2 Table2. cpt-textmodelsofdifferentsizes,rangingfrom300M(S)to175B(XL),arecomparedtopreviousworkonlinear-probe classificationtasksinSentEval. Wereportperformanceofunsupervisedmodels,aswellasthosefine-tunedonNLIdata. Method Accuracy Zero-shot 88. 1 Zero-shotwithprompting 89. 1 k-NN 93.",
+    "chunk_size": 999,
+    "word_count": 208,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 23,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_23",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "classificationtasksinSentEval. Wereportperformanceofunsupervisedmodels,aswellasthosefine-tunedonNLIdata. Method Accuracy Zero-shot 88. 1 Zero-shotwithprompting 89. 1 k-NN 93. 3 Linear-probe 95. 7 MSMARCO NQ TriviaQA Fullfine-tunedSOTA 97. 5 Fine-tunedSOTA 44. 3 84. 8,89. 8 84. 1,87. 8 Unsupervised Table3. Comparison of different classification strategies using the6Bcpt-textmodelfine-tunedonNLIdataforSST-2bi- BM25 18. 4 62. 9,78. 3 76. 4,83. 2 nary sentiment task (Socher et al. , 2013). Our zero-shot results ICT - 50. 9,66. 8 57. 5,73. 6 arebetterthanthe85. 4 accuracyobtainedbysupervisedneural MSS - 59. 8,74. 9 68. 2,79. 4 networks reported along with the release of the dataset (Socher Contriever - 67. 2,81. 3 74. 2,83. 2 etal. ,2013). cpt-textS 19. 9 65. 5,77. 2 75. 1,81. 7 cpt-textM 20. 6 68. 7,79. 6 78. O,83. 8 STS -12 -13 -14 -15 -16 Avg cpt-textL 21. 5 73. O,83. 4 80. O,86. 8 Unsupervised cpt-textXL 22. 7 78. 8,86. 8 82. 1,86. 9 SimCSE(Gaoetal. ,2021) 72. 9 84. O 75. 6 84. 8 81.",
+    "chunk_size": 997,
+    "word_count": 154,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 24,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_24",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "6 68. 7,79. 6 78. O,83. 8 STS -12 -13 -14 -15 -16 Avg cpt-textL 21. 5 73. O,83. 4 80. O,86. 8 Unsupervised cpt-textXL 22. 7 78. 8,86. 8 82. 1,86. 9 SimCSE(Gaoetal. ,2021) 72. 9 84. O 75. 6 84. 8 81. 8 79. 8 cpt-textS 62. 1 60. O 62. O 71. 8 73. 7 65. 9 Table5. Evaluationofunsupervisedcpt-textmodelsofdiffer- cpt-textM 62. 7 62. 8 64. 6 73. 9 75. 3 67. 9 entsizesonseverallarge-scaletextsearchbenchmarks. Wereport cpt-textL 62. 4 66. 4 67. 6 76. O 77. 5 70. O MRR 10onMSMARCOandRecall 20,Recall 100forNQ cpt-textXL 64. 1 67. 5 68. 4 76. 7 78. 7 71. 1 and TriviaQA as done in prior work. Results for training with TransferfromNLI InverseClozeTask(ICT)andmaskedsalientspans(MSS)objec- SimCSE(Gaoetal. ,2021) 77. 5 87. 3 82. 4 86. 7 83. 9 83. 6 tivesaretakenfromSachanetal. (2021). cpt-textachievesthe cpt-textS 72. 8 80. 6 78. 7 84. 7 82. O 79. 8 best results among unsupervised methods, surpassing keyword cpt-textM 73. 7 80. 2 78. 9 85. O 82. 8 80.",
+    "chunk_size": 948,
+    "word_count": 169,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 25,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_25",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "(2021). cpt-textachievesthe cpt-textS 72. 8 80. 6 78. 7 84. 7 82. O 79. 8 best results among unsupervised methods, surpassing keyword cpt-textM 73. 7 80. 2 78. 9 85. O 82. 8 80. 1 search methods on MSMARCO (Robertson, 2009) and embed- cpt-textL 71. 8 79. 7 79. O 85. 8 84. O 80. 1 dingbasedmethods(Izacardetal. ,2021)onNQandTriviaQA. cpt-textXL 72. 3 80. 3 78. 9 85. 1 85. 1 80. 3 Table4. cpt-textperformsworsethanthepreviousbestsen- tenceembeddingmethodonsentencesimilaritytasks. Weinves- tigatethisresultinmoredetailinSection3. 4. 2. TextandCodeEmbeddingsbyContrastivePre-Training 3. 2. 2. BEIRSEARCH embeddingmodelswithincreaseddistractorsandstilldon't seebiggermodelsgivingaboostinsearchperformance. Next,weevaluateourmodelson11zero-shotsearchtasks in the BEIR evaluation suite (Thakur et al. , 2021). First, 3. 4. Analysis weobservethatourunsupervisedmodelperformscompet- itively even with some previous embedding methods that 3. 4. 1. EFFECTOFBATCHSIZE leveragesupervisedMSMARCOdata(Xiongetal.",
+    "chunk_size": 999,
+    "word_count": 114,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 26,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_26",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "First, 3. 4. Analysis weobservethatourunsupervisedmodelperformscompet- itively even with some previous embedding methods that 3. 4. 1. EFFECTOFBATCHSIZE leveragesupervisedMSMARCOdata(Xiongetal. ,2020; Our ablation study highlights the effect of the model's Hofsta tteretal. ,2021). Keyword-basedBM25(Robertson, batchsizeonthefinalperformance. Table9comparesthe 2009)achievesthebestresultsintheunsupervisedsetting performance of S (300M) cpt-text model trained with while cpt-text achieves the best transfer learning re- differentbatchsizesontheNQdevelopmentset. Sincewe sults. train with in-batch negatives, a larger batch increases the In the transfer setting, our models achieve a 5. 2  relative chancesofhavinghardnegativesinabatch, resultingina improvement over the previous best embedding method significantperformanceboost. (Izacard et al. , 2021). It also outperforms docT5query (Nogueiraetal. ,2019a)thatreliesonafine-tunedT5model 3. 4. 2. TRAININGBEHAVIOR (Raffeletal.",
+    "chunk_size": 977,
+    "word_count": 100,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 27,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_27",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "best embedding method significantperformanceboost. (Izacard et al. , 2021). It also outperforms docT5query (Nogueiraetal. ,2019a)thatreliesonafine-tunedT5model 3. 4. 2. TRAININGBEHAVIOR (Raffeletal. ,2019)fordocumentexpansion. cpt-text We observe that as we train our models for longer, the results are competitive even with methods that use sub- performance on search and classification tasks increases stantially more compute at test time. BM25 CE (Wang while the performance on sentence similarity tasks de- et al. , 2020) uses keyword search to select top 100 docu- creases(Figure4). Asdiscussedpreviously,sentencesimi- mentswhicharethenre-rankedbyacross-attentionneural larityisnotawelldefinedtask. Ahypothesisisthatsearch network encoder. The ranking encoder network performs tasks and sentence similarity tasks might have contradict- computationallyexpensivejointqueryanddocumentatten- ing definitions.",
+    "chunk_size": 909,
+    "word_count": 101,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 28,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_28",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "network encoder. The ranking encoder network performs tasks and sentence similarity tasks might have contradict- computationallyexpensivejointqueryanddocumentatten- ing definitions. For example, a sentence and its negation tion and cannot exploit indexing and approximate nearest couldbeconsideredasrelevantduringsearch,butnot\"sim- neighbor algorithms for fast and efficient search at query ilar\" in sentence similarity tasks. It is also important to time. Several other existing work take this approach of notethatpreviousembeddingsearchmethodsdonotreport leveragingmorecomputationresourcesatquerytimetoob- performanceonsentencesimilaritytasks(Karpukhinetal. , tain better search performance. ColBERT v2 (Santhanam 2020a;Sachanetal. ,2021;Izacardetal. ,2021)andprevi- et al. , 2021) is a multi-vector method that represents the oussentenceembeddingmethodsdonotevaluateonsearch query and the documents as a set of vectors, and employs tasks(Reimers Gurevych,2019;Giorgietal.",
+    "chunk_size": 974,
+    "word_count": 101,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 29,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_29",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": ", 2021) is a multi-vector method that represents the oussentenceembeddingmethodsdonotevaluateonsearch query and the documents as a set of vectors, and employs tasks(Reimers Gurevych,2019;Giorgietal. ,2020;Gao a multi-step retrieval procedure to obtain relevant docu- etal. ,2021). Whendecidingthemodelcheckpointstouse ments. Splade v2 (Formal et al. , 2021) represents queries for evaluation, we assigned higher importance to search and documents as sparse vectors of size equivalent to the and classification tasks as they are commonly associated vocabularyoftheBERTencoder(Devlinetal. ,2019). Our cpt-text models compute only one dense embedding withclearlydefinedreal-worldapplicationswhilesentence similaritytasksarelessso. per document which are indexed offline and does not de- pendonanycross-attentionre-rankeratquerytime. 4. RelatedWork 3. 3. CodeSearch The goal of representation learning (Bengio et al.",
+    "chunk_size": 912,
+    "word_count": 107,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 30,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_30",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "per document which are indexed offline and does not de- pendonanycross-attentionre-rankeratquerytime. 4. RelatedWork 3. 3. CodeSearch The goal of representation learning (Bengio et al. , 2012) We evaluate our code embedding models on the code istolearnanembeddingspaceinwhichsimilarexamples search task using the CodeSearchNet benchmark (Husain stayclosetoeachotherwhiledissimilaronesarefarapart et al. , 2020). Given a natural language query, the model (Hadselletal. ,2006). Incontrastivelearning,thelearning is expected to retrieve the relevant code block among 1K procedure is formulated as a classification problem given candidates. The models are evaluated on 6 programming similaranddissimilarcandidates(Chopraetal. ,2005;Gut- languages and our model achieves state-of-the-art results mann Hyva rinen,2010;Schroffetal. ,2015;Sohn,2016; (Table 7). Unlike with text embeddings, we do not see a van den Oord et al. , 2018).",
+    "chunk_size": 926,
+    "word_count": 115,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 31,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_31",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "languages and our model achieves state-of-the-art results mann Hyva rinen,2010;Schroffetal. ,2015;Sohn,2016; (Table 7). Unlike with text embeddings, we do not see a van den Oord et al. , 2018). Recent work relies on con- performance improvement with increased model size for trastive objective to learn representations for images (Wu codeembeddings. et al. , 2018; He et al. , 2020; Chen et al. , 2020; Zbontar et al. , 2021), text, or both jointly (Lu et al. , 2019; Sun Wealsoevaluateonahardersettingoffindingtherelevant etal. ,2019;Kimetal. ,2021;Radfordetal. ,2021;Khosla codeblockamong10Kcandidatesinsteadof1K. Here,we et al. , 2020). In self-supervised contrastive learning, pos- compare the performance of cpt-text models against itive samples can be collected in various approaches in- cpt-code models (Table 8).",
+    "chunk_size": 820,
+    "word_count": 115,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 32,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_32",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "et al. , 2020). In self-supervised contrastive learning, pos- compare the performance of cpt-text models against itive samples can be collected in various approaches in- cpt-code models (Table 8). It is interesting to see that cluding by creating an augmented version of the origi- text embedding performs fairly well in code search espe- nal input without modifying the semantic meaning (Gao cially in Python. We see a drop in performance for code TextandCodeEmbeddingsbyContrastivePre-Training covid nfc fiqa arg. touche quora scifact climate dbp. hotpot fever Avg. Unsupervised BM25(Robertson,2009) 65. 6 32. 5 23. 6 31. 5 36. 7 78. 9 66. 5 21. 3 31. 3 60. 3 75. 3 47. 6 Contriever(Izacardetal. ,2021) 27. 4 31. 7 24. 5 37. 9 19. 3 83. 5 64. 9 15. 5 29. 2 48. 1 68. 2 40. 9 cpt-textS 52. 9 32. O 34. 1 38. 7 21. O 68. 1 65. 4 15. 8 27. 2 51. 5 57. 1 42. 2 cpt-textM 44. 3 34. 5 37. 3 41. 2 23. 3 70. 3 68. 3 15. 6 29. 6 53. O 58. 2 43. 2 cpt-textL 42. 7 36. 9 39. 7 39. 2 22. 8 68. 7 71. 2 16.",
+    "chunk_size": 996,
+    "word_count": 203,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 33,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_33",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": " O 34. 1 38. 7 21. O 68. 1 65. 4 15. 8 27. 2 51. 5 57. 1 42. 2 cpt-textM 44. 3 34. 5 37. 3 41. 2 23. 3 70. 3 68. 3 15. 6 29. 6 53. O 58. 2 43. 2 cpt-textL 42. 7 36. 9 39. 7 39. 2 22. 8 68. 7 71. 2 16. 1 31. 2 54. 3 63. 8 44. 2 TransferfromMSMARCO TAS-B(Hofsta tteretal. ,2021) 48. 1 31. 9 30. O 42. 9 16. 2 83. 5 64. 3 22. 8 38. 4 58. 4 70. O 46. O ANCE(Xiongetal. ,2020) 65. 4 23. 7 29. 5 41. 5 24. O 85. 2 50. 7 19. 8 28. 1 45. 6 66. 9 43. 7 Contriever(Izacardetal. ,2021) 59. 6 32. 8 32. 9 44. 6 23. O 86. 5 67. 7 23. 7 41. 3 63. 8 75. 8 50. 2 cpt-textS 67. 9 33. 2 38. 4 47. O 28. 5 70. 6 67. 2 18. 5 36. 2 59. 4 72. 1 49. O cpt-textM 58. 5 36. 7 42. 2 49. 2 29. 7 69. 7 70. 4 19. 9 38. 6 63. 1 77. O 50. 5 cpt-textL 56. 2 38. O 45. 2 46. 9 30. 9 67. 7 74. 4 19. 4 41. 2 64. 8 75. 6 50. 9 cpt-textXL 64. 9 40. 7 51. 2 43. 5 29. 1 63. 8 75. 4 22. 3 43. 2 68. 8 77. 5 52. 8 docT5query(Nogueiraetal. ,2019a) 71. 3 32. 8 29. 1 34. 9 34. 7 80. 2 67. 5 20. 1 33. 1 58. O 71. 4 48. 5 BM25 CE(Wangetal.",
+    "chunk_size": 998,
+    "word_count": 279,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 34,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_34",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "64. 9 40. 7 51. 2 43. 5 29. 1 63. 8 75. 4 22. 3 43. 2 68. 8 77. 5 52. 8 docT5query(Nogueiraetal. ,2019a) 71. 3 32. 8 29. 1 34. 9 34. 7 80. 2 67. 5 20. 1 33. 1 58. O 71. 4 48. 5 BM25 CE(Wangetal. ,2020) 75. 7 35. O 34. 7 31. 1 27. 1 82. 5 68. 8 25. 3 39. 2 70. 7 81. 9 52. O ColBERTv2(Santhanametal. ,2021) 73. 8 33. 8 35. 6 46. 3 26. 3 85. 2 69. 3 17. 6 44. 6 66. 7 78. 5 52. 5 Spladev2(Formaletal. ,2021) 71. O 33. 4 33. 6 47. 9 27. 2 83. 8 69. 3 23. 5 43. 5 68. 4 78. 6 52. 7 Table6. Comparison of cpt-text to previous methods on 11 zero-shot search tasks in the BEIR evaluation suite (Thakur et al. , 2021). Resultsarereportedbothintheunsuperviseddatasettingandinthetransferdatasetting. cpt-textoutperformspreviousbest embeddingmethods(Xiongetal. ,2020;Hofsta tteretal. ,2021;Izacardetal. ,2021)inboththesettings.",
+    "chunk_size": 816,
+    "word_count": 158,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 35,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_35",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "cpt-textoutperformspreviousbest embeddingmethods(Xiongetal. ,2020;Hofsta tteretal. ,2021;Izacardetal. ,2021)inboththesettings. Intheunsupervisedsetting, BM25(Robertson,2009)stillachievesthebestperformancewhileinthetransfersettingcpt-textiscompetitivewithmethodsthat usesubstantiallymorecomputeattesttime(Wangetal. ,2020;Santhanametal. ,2021;Formaletal. ,2021). BatchSize MRR 10 Go Ruby Python Java JS PHP Avg. 1536 71. 4 CodeBERT 69. 3 70. 6 84. O 86. 8 74. 8 70. 6 76. O 12288 84. 7 GraphCodeBERT 84. 1 73. 2 87. 9 75. 7 71. 1 72. 5 77. 4 cpt-codeS 97. 7 86. 3 99. 8 94. O 86. O 96. 7 93. 4 Table9. Performanceofthecpt-text300MmodelonNQdev cpt-codeM 97. 5 85. 5 99. 9 94. 4 86. 5 97. 2 93. 5 setgivendifferenttrainingbatchsizes. Table7. Comparisonofcpt-codeoncodesearchacross6pro- gramminglanguages(Husainetal. ,2020)withCodeBERT(Feng etal. ,2020)andGraphCodeBERT(Guoetal. ,2021). Thetaskre- etal.",
+    "chunk_size": 898,
+    "word_count": 100,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 36,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_36",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "Table7. Comparisonofcpt-codeoncodesearchacross6pro- gramminglanguages(Husainetal. ,2020)withCodeBERT(Feng etal. ,2020)andGraphCodeBERT(Guoetal. ,2021). Thetaskre- etal. ,2021),bygroupingsampleswithinthesamecontext quiresfindingtherelevantcodeblockamong1Kcandidatesfora (Giorgi et al. , 2020; Izacard et al. , 2021), or by collecting givennaturallanguagequery. cpt-codeperformssubstantially dataaboutthesameobjectfromdifferentviews(Tianetal. , betterthanpreviousmethodsonallthelanguages. 2019). Learningwordembeddingsisawellstudiedresearcharea Go Ruby Python Java JS PHP Avg. (Brownetal. ,1992;Gutmann Hyva rinen,2010;Mikolov cpt-textS 60. 6 58. 9 92. 6 48. 4 52. 8 47. 6 60. 1 et al. , 2013; Pennington et al. , 2014). Learning low- cpt-textM 65. 4 63. 1 91. 4 47. 9 53. 5 43. 1 60. 7 dimensional representations of larger text pieces, denser cpt-codeS 90. 4 80. 6 98. 8 81. 9 76. 1 85. 3 85. 5 thanrawterm-basedvectors, hasbeenstudiedextensively cpt-codeM 90. O 89. 1 98. 9 81. 1 75. 6 85. 1 85.",
+    "chunk_size": 996,
+    "word_count": 121,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 37,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_37",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": " representations of larger text pieces, denser cpt-codeS 90. 4 80. 6 98. 8 81. 9 76. 1 85. 3 85. 5 thanrawterm-basedvectors, hasbeenstudiedextensively cpt-codeM 90. O 89. 1 98. 9 81. 1 75. 6 85. 1 85. O as well (Deerwester et al. , 1990; Yih et al. , 2011). Most oftherecentmodelsforlearningsentenceembeddingsrely Table8. Comparisonofcpt-codevscpt-textonlargescale onsupervisedNLIdatasets,usingentailmentpairsaspos- codesearch(Husainetal. ,2020). Thetaskistoretrievetherel- itiveexamplesandcontradictionpairsas(hard)negatives. evantcodeblockamong10Kcandidatesforagivennaturallan- SBERT(Reimers Gurevych,2019)trainedasiamesenet- guage query. It is interesting to note that cpt-text performs worktolearnarepresentationwheresentencesimilarityis quite well on Python code search without explicitly training on (text,code)pairs. estimatedbythecosinesimilaritybetweenembeddings. Li etal.",
+    "chunk_size": 881,
+    "word_count": 87,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 38,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_38",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "worktolearnarepresentationwheresentencesimilarityis quite well on Python code search without explicitly training on (text,code)pairs. estimatedbythecosinesimilaritybetweenembeddings. Li etal. (2020)improvestheembeddingspacetobeisotropic TextandCodeEmbeddingsbyContrastivePre-Training 90 89 88 87 86 85 ecnamrofreP Senteval NQ 75 70 65 O 10000 20000 30000 40000 50000 Training Steps ecnamrofreP Training Behavior neural encoders (Nogueira et al. , 2019b; Qu et al. , 2021). Xiong et al. (2020) proposed ANCE, a contrastive learn- ing framework for learning text representations for dense retrieval using mined hard negatives. Other unsupervised retriever methods use the Inverse Cloze Task or masked salientspanstoachievesignificantimprovementonODQA tasks (Sachan et al. , 2021). In comparison to most prior work, we find that with a large enough batch size, it is sts12 possible to achieve good search performance without us- sts13 sts14 ing supervised data.",
+    "chunk_size": 958,
+    "word_count": 123,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 39,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_39",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "et al. , 2021). In comparison to most prior work, we find that with a large enough batch size, it is sts12 possible to achieve good search performance without us- sts13 sts14 ing supervised data. Finally, the recently published Con- sts15 triever(Izacardetal. ,2021)ismostsimilartoourworkon sts16 learning text embeddings for text search using contrastive learningonunlabeleddata. Semantic code search refers to the task of retrieving code relevant to a query in natural language. The CodeSearch- Figure4. PerformanceofM(1. 2B)cpt-textmodelonclassi- Netchallenge(Husainetal. ,2020)presentsasetofbench- fication,searchandsentencesimilaritytasksatdifferenttraining mark code search tasks in different programming lan- steps. While the performance on search and classification im- guages, as well as a simple baseline model to predict em- proveswithlongertraining,theperformanceonsentencesimilar- beddings of query and code via contrastive learning on a itydegrades. datasetof(text,code)pairs.",
+    "chunk_size": 990,
+    "word_count": 119,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 40,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_40",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "as a simple baseline model to predict em- proveswithlongertraining,theperformanceonsentencesimilar- beddings of query and code via contrastive learning on a itydegrades. datasetof(text,code)pairs. ContraCode(Jainetal. ,2021) usesacontrastivelearningtaskofidentifyingfunctionally similar programs, where the functionally similar samples vianormalizingflows. Thewhiteningoperationisanother are generated via source-to-source compiler transforma- alternativeoperationtoimprovetheisotropyoftheembed- tions. CodeBERT (Feng et al. , 2020) learns to predict se- dingspace(Suetal. ,2021). Itistypicaltoinitializesuch mantic similarity with a pre-trained language model and models with a pre-trained language model (Devlin et al. , GraphCodeBERT (Guo et al. , 2021) further improves the 2019)beforetrainingonNLIdatasets. performanceontheCodeSearchNetbenchmarkbyadding pre-trainingtasksoncodestructure.",
+    "chunk_size": 892,
+    "word_count": 84,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 41,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_41",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "model (Devlin et al. , GraphCodeBERT (Guo et al. , 2021) further improves the 2019)beforetrainingonNLIdatasets. performanceontheCodeSearchNetbenchmarkbyadding pre-trainingtasksoncodestructure. Several methods have been studied for unsupervised or self-supervisedsentenceembeddinglearning(Logeswaran  Lee,2018;Zhangetal. ,2020;Gaoetal. ,2021). Com- 5. BroaderImpacts mon approaches consider sentences within the same con- Prior research has shown that text representation models textassemanticallysimilarsamples(Kirosetal. ,2015;Lo- encode the biases present in their training data, including geswaran   Lee, 2018). To create positive training pairs those which are discriminatory towards protected groups with augmented samples, a diverse set of text augmen- such as Black people or women (Bolukbasi et al. , 2016; tation operations have been explored, including lexicon- Caliskan et al. , 2017; May et al. , 2019; Zhao et al. , 2018; baseddistortion(Wei Zou,2019),synonymreplacement Rudingeretal.",
+    "chunk_size": 997,
+    "word_count": 119,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 42,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_42",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "et al. , 2016; tation operations have been explored, including lexicon- Caliskan et al. , 2017; May et al. , 2019; Zhao et al. , 2018; baseddistortion(Wei Zou,2019),synonymreplacement Rudingeretal. ,2018). Biasesencodedinembeddingmod- (Kobayashi, 2018), back-translation (Fang   Xie, 2020), elsmaycauserepresentationalharms3 byreinforcingexis- cut-off (Shen et al. , 2020) and dropout (Gao et al. , 2021). tentsocietalbiasesinthetextcorpus,andfurtherpropagat- However, unsupervised sentence embedding models still ingthemindownstreamtasksofembeddingmodels. performnotablyworsethansupervisedsentenceencoders.",
+    "chunk_size": 607,
+    "word_count": 61,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 43,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_43",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "However, unsupervised sentence embedding models still ingthemindownstreamtasksofembeddingmodels. performnotablyworsethansupervisedsentenceencoders. Therefore, we encourage further research on two research Large-scale text search based on dense embeddings and agendas: (a) developing robust evaluation methodologies neural information retrieval (neural IR) have the poten- formultipleclassesofbiasintrainingdataandpre-trained tial to generalize better than keyword matching in classic models, and (b) developing and improving methods for IR systems. Neural IR systems encode documents at the mitigating encoded bias, including fine-tuning to reduce indexing stage and then perform nearest neighbor search biasinpre-trainedmodels(Caliskanetal. ,2017;Mayetal. , (Johnson et al. , 2019) at query time (Lin et al. , 2021). 2019;Bolukbasietal. ,2016;Liangetal. ,2020;Parketal. , NeuralIRmodelsareusuallylearnedbyfine-tuningapre- 2018;Solaiman Dennison,2021).",
+    "chunk_size": 952,
+    "word_count": 103,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 44,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_44",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": ", (Johnson et al. , 2019) at query time (Lin et al. , 2021). 2019;Bolukbasietal. ,2016;Liangetal. ,2020;Parketal. , NeuralIRmodelsareusuallylearnedbyfine-tuningapre- 2018;Solaiman Dennison,2021). Untilwehaverobust trained language model on supervised search corpus (Lee evaluationmethodology,itisimportanttorestrictandmon- et al. ; Guu et al. , 2020; Karpukhin et al. , 2020b; Lewis itortheuseofthemodelindownstreamapplications. Par- etal. ,2020). ManySOTAsearchmodelscombineclassical IR with neural IR in a staged setup, where the candidates 3Representational harms occur when systems reinforce the arefirstnarroweddownbyBM25keywordsearch(Robert- subordination of some groups along the lines of identity, e. g. son,2009)andthenre-rankedbyjointqueryanddocument stereotypingordenigration(Crawford,2017). TextandCodeEmbeddingsbyContrastivePre-Training ticularly for those where risk of representational harm is D. Languagemodelsarefew-shotlearners.",
+    "chunk_size": 946,
+    "word_count": 94,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 45,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_45",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "stereotypingordenigration(Crawford,2017). TextandCodeEmbeddingsbyContrastivePre-Training ticularly for those where risk of representational harm is D. Languagemodelsarefew-shotlearners. InAdvances greatandthosewherebiasedrepresentationsmayinfluence inNeuralInformationProcessingSystems,2020. theallocationofresourcesandopportunitiestopeople. Caliskan, A. , Bryson, J. J. , and Narayanan, A. Seman- Our embedding models are trained with large batch sizes ticsderivedautomaticallyfromlanguagecorporacontain and require substantial computation resources. While this human-likebiases. Science,356(6334):183 186,2017. training regime is environmentally and computationally costly, there are promising paths forward to amortize and Chen,M. ,Tworek,J. ,Jun,H. ,Yuan,Q. ,deOliveiraPinto, offset these costs while allowing users to benefits from H. P. , Kaplan, J. , Edwards, H. , Burda, Y. , Joseph, N. , thecapabilitiesofthesemodels. Forexample, safepublic Brockman, G. , Ray, A. , Puri, R. , Krueger, G.",
+    "chunk_size": 997,
+    "word_count": 106,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 46,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_46",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "while allowing users to benefits from H. P. , Kaplan, J. , Edwards, H. , Burda, Y. , Joseph, N. , thecapabilitiesofthesemodels. Forexample, safepublic Brockman, G. , Ray, A. , Puri, R. , Krueger, G. , Petrov, access to large pre-trained language models, and efficient M. , Khlaaf, H. , Sastry, G. , Mishkin, P. , Chan, B. , Gray, training pipelines that leverage improved model architec- S. ,Ryder,N. ,Pavlov,M. ,Power,A. ,Kaiser,I. ,Bavar- turesandtrainingschemes. Weencouragefurtherresearch ian, M. , Winter, C. , Tillet, P. , Such, F. P. , Cummings, andimplementationeffortsintheseareas. D. ,Plappert,M. ,Chantzis,F. ,Barnes,E. ,Herbert-Voss, A. ,Guss,W. H. ,Nichol,A. ,Paino,A. ,Tezak,N. ,Tang, J. , Babuschkin, I. , Balaji, S. , Jain, S. , Saunders, W. , 6. Conclusion Hesse, C. , Carr, A. N. , Leike, J. , Achiam, J. , Misra, We showed that contrastive pre-training on unsupervised V. , Morikawa, E. , Radford, A. , Knight, M.",
+    "chunk_size": 932,
+    "word_count": 149,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 47,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_47",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "Jain, S. , Saunders, W. , 6. Conclusion Hesse, C. , Carr, A. N. , Leike, J. , Achiam, J. , Misra, We showed that contrastive pre-training on unsupervised V. , Morikawa, E. , Radford, A. , Knight, M. , Brundage, data with a sufficiently large batch size can lead to high M. , Murati, M. , Mayer, K. , Welinder, P. , McGrew, B. , qualityvectorrepresentationsoftextandcode. Ourmodels Amodei,D. ,McCandlish,S. ,Sutskever,I. ,andZaremba, achievednewstate-of-the-artresultsinlinear-probeclassi- W. Evaluating large language models trained on code. fication,textsearchandcodesearch. Wefindthatourmod- arXivpreprintarXiv:2107. 03374,2021. els underperformed on sentence similarity tasks and ob- Chen, T. , Kornblith, S. , Norouzi, M. , and Hinton, G. E. served unexpected training behavior with respect to these A simple framework for contrastive learning of visual tasks. Finally,wediscussedthebroaderimpactofourwork representations. InInternationalconferenceonmachine onsociety. learning(ICML),2020.",
+    "chunk_size": 993,
+    "word_count": 128,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 48,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_48",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "to these A simple framework for contrastive learning of visual tasks. Finally,wediscussedthebroaderimpactofourwork representations. InInternationalconferenceonmachine onsociety. learning(ICML),2020. References Chopra,S. ,Hadsell,R. ,andLeCun,Y. Learningasimilar- itymetricdiscriminatively,withapplicationtofacever- Bengio, Y. , Courville, A. C. , and Vincent, P. Representa- ification. In Computer Vision and Pattern Recognition tionlearning: Areviewandnewperspectives. Transac- (CVPR). IEEE,2005. tions on pattern analysis and machine intelligence, 35 (8),2012. Conneau,A. andKiela,D. Senteval: Anevaluationtoolkit for universal sentence representations. arXiv preprint Bolukbasi, T. , Chang, K. , Zou, J. Y. , Saligrama, V. , and arXiv:1803. 05449,2018. Kalai,A. Manistocomputerprogrammeraswomanis Crawford,K. Thetroublewithbias. KeynoteatNeurIPS, tohomemaker. debiasingwordembeddings. 29,2016. 2017. Bowman,S. R. ,Angeli,G. ,Potts,C. ,andManning,C. D. Deerwester, S. , Dumais, S. , Furnas, G.",
+    "chunk_size": 995,
+    "word_count": 103,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 49,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_49",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "Crawford,K. Thetroublewithbias. KeynoteatNeurIPS, tohomemaker. debiasingwordembeddings. 29,2016. 2017. Bowman,S. R. ,Angeli,G. ,Potts,C. ,andManning,C. D. Deerwester, S. , Dumais, S. , Furnas, G. , Landauer, T. , and A large annotated corpus for learning natural language Harshman, R. Indexing by latent semantic analysis. inference. InConferenceonEmpiricalMethodsinNat- JournaloftheAmericansocietyforinformationscience, uralLanguageProcessing(EMNLP). ACL,2015. 41(6):391 407,1990. Devlin, J. , Chang, M. -W. , Lee, K. , and Toutanova, K. Brown, P. F. , DellaPietra, V. J. , deSouza, P. V. , Lai, J. C. , BERT: Pre-training of deep bidirectional transformers and Mercer, R. I. Class-based n-gram models of nat- forlanguageunderstanding. InConferenceoftheNorth ural language. Computational Linguistics, 18(4):467  AmericanChapteroftheAssociationforComputational 480,1992. Linguistics(NAACL). ACL,2019. Brown, T. , Mann, B. , Ryder, N. , Subbiah, M. , Kaplan, Fang, H. and Xie, P.",
+    "chunk_size": 978,
+    "word_count": 121,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 50,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_50",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "Linguistics, 18(4):467  AmericanChapteroftheAssociationforComputational 480,1992. Linguistics(NAACL). ACL,2019. Brown, T. , Mann, B. , Ryder, N. , Subbiah, M. , Kaplan, Fang, H. and Xie, P. CERT: contrastive self-supervised J. D. , Dhariwal, P. , Neelakantan, A. , Shyam, P. , Sastry, learning for language understanding. arXiv preprint G. , Askell, A. , Agarwal, S. , Herbert-Voss, A. , Krueger, arXiv:2005. 12766,2020. G. , Henighan, T. , Child, R. , Ramesh, A. , Ziegler, D. , Wu, J. , Winter, C. , Hesse, C. , Chen, M. , Sigler, E. , Feng,Z. ,Guo,D. ,Tang,D. ,Duan,N. ,Feng,X. ,Gong,M. , Litwin, M. , Gray, S. , Chess, B. , Clark, J. , Berner, C. , Shou,I. ,Qin,B. ,Liu,T. ,Jiang,D. ,andZhou,M. Code- McCandlish,S. ,Radford,A. ,Sutskever,I. ,andAmodei, bert: Apre-trainedmodelforprogrammingandnatural TextandCodeEmbeddingsbyContrastivePre-Training languages. InConferenceonEmpiricalMethodsinNat- Izacard, G. , Caron, M. , Hosseini, I. , Riedel, S. , Bo- uralLanguageProcessing(EMNLP),2020.",
+    "chunk_size": 993,
+    "word_count": 140,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 51,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_51",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "TextandCodeEmbeddingsbyContrastivePre-Training languages. InConferenceonEmpiricalMethodsinNat- Izacard, G. , Caron, M. , Hosseini, I. , Riedel, S. , Bo- uralLanguageProcessing(EMNLP),2020. janowski,P. ,Joulin,A. ,andGrave,E. Towardsunsuper- viseddenseinformationretrievalwithcontrastivelearn- Formal, T. , Lassance, C. , Piwowarski, B. , and Clinchant, ing. arXivpreprintarXiv:2112. 09118,2021. S. SPLADEv2: Sparselexicalandexpansionmodelfor informationretrieval. arXivpreprintarXiv:2109. 10086, Jain,P. ,Jain,A. ,Zhang,T. ,Abbeel,P. ,Gonzalez,J. E. ,and 2021. Stoica, I. Contrastive code representation learning. In ConferenceonEmpiricalMethodsinNaturalLanguage Gao, T. , Yao, X. , and Chen, D. SimCSE: Simple con- Processing(EMNLP),2021. trastivelearningofsentenceembeddings. InConference onEmpiricalMethodsinNaturalLanguageProcessing Jia, C. , Yang, Y. , Xia, Y. , Chen, Y. -T. , Parekh, Z. , Pham, (EMNLP),2021. H. ,Le,Q. V. ,Sung,Y. ,Li,Z. ,andDuerig,T.",
+    "chunk_size": 958,
+    "word_count": 98,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 52,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_52",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "InConference onEmpiricalMethodsinNaturalLanguageProcessing Jia, C. , Yang, Y. , Xia, Y. , Chen, Y. -T. , Parekh, Z. , Pham, (EMNLP),2021. H. ,Le,Q. V. ,Sung,Y. ,Li,Z. ,andDuerig,T. Scalingup visual and vision-language representation learning with Giorgi, J. M. , Nitski, O. , Bader, G. D. , andWang, B. De- noisy text supervision. In International Conference on clutr: Deepcontrastivelearningforunsupervisedtextual MachineLearning(ICML),2021. representations. InProceedingsofACL IJCNLP,2020. Johnson, J. , Douze, M. , andJe gou, H. Billion-scalesimi- Goodman,N. Sevenstricturesonsimilarity. BobbsMerrill, laritysearchwithgpus. IEEETransactionsonBigData, 1972. 2019. Guo, D. , Ren, S. , Lu, S. , Feng, Z. , Tang, D. , Liu, S. , Joshi, M. , Choi, E. , Weld, D. , and Zettlemoyer, I. Zhou, I. , Duan, N. , Svyatkovskiy, A. , Fu, S. , Tufano, TriviaQA: A large scale distantly supervised challenge M. ,Deng,S. K. ,Clement,C. B. ,Drain,D. ,Sundaresan, datasetforreadingcomprehension. InConferenceofthe N.",
+    "chunk_size": 999,
+    "word_count": 137,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 53,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_53",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": ", Svyatkovskiy, A. , Fu, S. , Tufano, TriviaQA: A large scale distantly supervised challenge M. ,Deng,S. K. ,Clement,C. B. ,Drain,D. ,Sundaresan, datasetforreadingcomprehension. InConferenceofthe N. ,Yin,J. ,Jiang,D. ,andZhou,M. Graphcodebert:Pre- AssociationforComputationalLinguistics(ACL). ACL, trainingcoderepresentationswithdataflow. InInterna- 2017. tional Conference on Learning Representation (ICLR), 2021. Karpukhin, V. , Oguz, B. , Min, S. , Lewis, P. , Wu, I. , Edunov, S. , Chen, D. , and Yih, W. -t. Dense passage Gutmann,M. andHyva rinen,A. Noise-contrastiveestima- retrieval for open-domain question answering. In Con- tion: A new estimation principle for unnormalized sta- ferenceonEmpiricalMethodsinNaturalLanguagePro- tisticalmodels. InConferenceonArtificialIntelligence cessing(EMNLP),2020a. andStatistics. PMLR,2010. Karpukhin, V. , Oguz, B. , Min, S. , Wu, I. , Edunov, S. , Guu, K. , Lee, K. , Tung, Z. , Pasupat, P. , and Chang, Chen,D. ,andYih,W.",
+    "chunk_size": 970,
+    "word_count": 124,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 54,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_54",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "cessing(EMNLP),2020a. andStatistics. PMLR,2010. Karpukhin, V. , Oguz, B. , Min, S. , Wu, I. , Edunov, S. , Guu, K. , Lee, K. , Tung, Z. , Pasupat, P. , and Chang, Chen,D. ,andYih,W. Densepassageretrievalforopen- M. REALM: retrieval-augmented language model pre- domain question answering. In Conference on Empiri- training. arXivpreprintarXiv:2002. 08909,2020. calMethodsinNaturalLanguageProcessing(EMNLP), 2020b. Hadsell, R. , Chopra, S. , and LeCun, Y. Dimensionality reductionbylearninganinvariantmapping. InComputer Khosla, P. , Teterwak, P. , Wang, C. , Sarna, A. , Tian, Vision and Pattern Recognition (CVPR), volume 2, pp. Y. , Isola, P. , Maschinot, A. , Liu, C. , and Krishnan, 1735 1742. IEEE,2006. D. Supervised contrastive learning. arXiv preprint arXiv:2004. 11362,2020. He,K. ,Fan,H. ,Wu,Y. ,Xie,S. ,andGirshick,R. B. Mo- mentum contrast for unsupervised visual representation Kim, W. , Son, B. , and Kim, I. Vilt: Vision-and- learning.",
+    "chunk_size": 950,
+    "word_count": 135,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 55,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_55",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": " preprint arXiv:2004. 11362,2020. He,K. ,Fan,H. ,Wu,Y. ,Xie,S. ,andGirshick,R. B. Mo- mentum contrast for unsupervised visual representation Kim, W. , Son, B. , and Kim, I. Vilt: Vision-and- learning. In Computer Vision and Pattern Recognition language transformer without convolution or region su- (CVPR),2020. pervision. In International Conference on Machine Learning(ICML),2021. Hofsta tter, S. , Lin, S. , Yang, J. , Lin, J. , and Hanbury, A. Efficiently teaching an effective dense retriever Kingma,D. P. andWelling,M. Auto-EncodingVariational with balanced topic aware sampling. arXiv preprint Bayes. InInternationalConferenceonLearningRepre- arXiv:2104. 06967,2021. sentation(ICLR),2014. Husain, H. , Wu, H. -H. , Gazit, T. , Allamanis, M. , and Kiros, J. , Zhu, Y. , Salakhutdinov, R. , Zemel, R. S. , Tor- Brockschmidt, M. CodeSearchNet challenge: Evaluat- ralba, A. , Urtasun, R. , andFidler, S. Skip-thoughtvec- ing the state of semantic code search. arXiv preprint tors.",
+    "chunk_size": 983,
+    "word_count": 139,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 56,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_56",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "R. , Zemel, R. S. , Tor- Brockschmidt, M. CodeSearchNet challenge: Evaluat- ralba, A. , Urtasun, R. , andFidler, S. Skip-thoughtvec- ing the state of semantic code search. arXiv preprint tors. InAdvancesinNeuralInformationProcessingSys- arXiv:1909. 09436,2020. tems(NeuriPS),2015. TextandCodeEmbeddingsbyContrastivePre-Training Kobayashi, S. Contextual augmentation: Data augmen- Nguyen, T. , Rosenberg, M. , Song, X. , Gao, J. , Tiwary, tation by words with paradigmatic relations. arXiv S. , Majumder, R. , and Deng, I. MS MARCO: A hu- preprintarXiv:1805. 06201,2018. mangeneratedmachinereadingcomprehensiondataset. arXivpreprintarXiv:1611. 09268,2016. Kwiatkowski, T. , Palomaki, J. , Redfield, O. , Collins, M. , Parikh,A. ,Alberti,C. ,Epstein,D. ,Polosukhin,I. ,Kel- Nogueira, R. , Lin, J. , and Epistemic, A. From doc2query cey, M. , Devlin, J. , Lee, K. , Toutanova, K. N. , Jones, todoctttttquery. Onlinepreprint,2019a. I. , Chang, M. -W. , Dai, A. , Uszkoreit, J. , Le, Q. , and Petrov, S.",
+    "chunk_size": 998,
+    "word_count": 141,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 57,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_57",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "Epistemic, A. From doc2query cey, M. , Devlin, J. , Lee, K. , Toutanova, K. N. , Jones, todoctttttquery. Onlinepreprint,2019a. I. , Chang, M. -W. , Dai, A. , Uszkoreit, J. , Le, Q. , and Petrov, S. Naturalquestions: abenchmarkforquestion Nogueira, R. , Yang, W. , Cho, K. , and Lin, J. Multi- answering research. Transactions of the Association of stage document ranking with BERT. arXiv preprint ComputationalLinguistics,2019. arXiv:1910. 14424,2019b. Lee, K. , Chang, M. , and Toutanova, K. Latent retrieval Park,J. H. ,Shin,J. ,andFung,P. Reducinggenderbiasin forweaklysupervisedopendomainquestionanswering. abusive language detection. In Conference on Empiri- InKorhonen,A. ,Traum,D. R. ,andMa rquez,I. (eds. ), calMethodsinNaturalLanguageProcessing(EMNLP), Conference of the Association for Computational Lin- 2018. guistics(ACL),pp. 6086 6096. ACL. Pennington, J. , Socher, R. , and Manning, C. GloVe: Lewis, P. S. H. , Perez, E. , Piktus, A. , Petroni, F.",
+    "chunk_size": 962,
+    "word_count": 137,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 58,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_58",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "of the Association for Computational Lin- 2018. guistics(ACL),pp. 6086 6096. ACL. Pennington, J. , Socher, R. , and Manning, C. GloVe: Lewis, P. S. H. , Perez, E. , Piktus, A. , Petroni, F. , Global vectors for word representation. In Conference Karpukhin, V. , Goyal, N. , Ku ttler, H. , Lewis, M. , Yih, onEmpiricalMethodsinNaturalLanguageProcessing W. ,Rockta schel,T. ,Riedel,S. ,andKiela,D. Retrieval- (EMNLP),2014. augmented generation for knowledge-intensive NLP Peters, M. E. , Neumann, M. , Iyyer, M. , Gardner, M. , tasks. In Advances in Neural Information Processing Clark, C. , Lee, K. , and Zettlemoyer, I. Deep con- Systems(NeuriPS),2020. textualized word representations. In Proceedings of Li, B. , Zhou, H. , He, J. , Wang, M. , Yang, Y. , and Li, I. NCAAL IJCNLP,2018. On the sentence embeddings from pre-trained language Qu,Y. ,Ding,Y. ,Liu,J. ,Liu,K. ,Ren,R. ,Zhao,X. ,Dong, models. InConferenceonEmpiricalMethodsinNatural D. ,Wu,H. ,andWang,H.",
+    "chunk_size": 963,
+    "word_count": 146,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 59,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_59",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": " I. NCAAL IJCNLP,2018. On the sentence embeddings from pre-trained language Qu,Y. ,Ding,Y. ,Liu,J. ,Liu,K. ,Ren,R. ,Zhao,X. ,Dong, models. InConferenceonEmpiricalMethodsinNatural D. ,Wu,H. ,andWang,H. Rocketqa:Anoptimizedtrain- LanguageProcessing(EMNLP),2020. ingapproachtodensepassageretrievalforopen-domain Liang,P. P. ,Li,I. M. ,Zheng,E. ,Lim,Y. C. ,Salakhutdinov, questionanswering. InConferenceoftheAssociationfor R. ,andMorency,I. Towardsdebiasingsentencerepre- ComputationalLinguistics(ACL),2021. sentations. InConferenceoftheAssociationforCompu- Radford,A. ,Kim,J. W. ,Hallacy,C. ,Ramesh,A. ,Goh,G. , tationalLinguistics(ACL),2020. Agarwal, S. , Sastry, G. , Askell, A. , Mishkin, P. , Clark, Lin,J. ,Nogueira,R. ,andYates,A. Pretrainedtransformers J. , Krueger, G. , and Sutskever, I. Learning transferable fortextranking: BERTandbeyond. SynthesisLectures visualmodelsfromnaturallanguagesupervision. arXiv onHumanLanguageTechnologies,14(4):1 325,2021. preprintarXiv:2103. 00020,2021.",
+    "chunk_size": 992,
+    "word_count": 85,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 60,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_60",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "Learning transferable fortextranking: BERTandbeyond. SynthesisLectures visualmodelsfromnaturallanguagesupervision. arXiv onHumanLanguageTechnologies,14(4):1 325,2021. preprintarXiv:2103. 00020,2021. Logeswaran, I. and Lee, H. An efficient framework for Raffel, C. , Shazeer, N. , Roberts, A. , Lee, K. , Narang, S. , learningsentencerepresentations. InInternationalCon- Matena, M. , Zhou, Y. , Li, W. , and Liu, P. J. Exploring ferenceonLearningRepresentation(ICLR),2018. thelimitsoftransferlearning withaunifiedtext-to-text transformer. arXivpreprintarXiv:1910. 10683,2019. Lu, J. , Batra, D. , Parikh, D. , and Lee, S. Vil- bert: Pretraining task-agnostic visiolinguistic represen- Ramesh,A. ,Pavlov,M. ,Goh,G. ,Gray,S. ,Voss,C. ,Rad- tations for vision-and-language tasks. arXiv preprint ford, A. , Chen, M. , and Sutskever, I. Zero-shot text- arXiv:1908. 02265,2019. to-image generation. arXiv preprint arXiv:2102. 12092, 2021. May, C. , Wang, A. , Bordia, S. , Bowman, S. R. , and Rudinger,R.",
+    "chunk_size": 997,
+    "word_count": 122,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 61,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_61",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": ", Chen, M. , and Sutskever, I. Zero-shot text- arXiv:1908. 02265,2019. to-image generation. arXiv preprint arXiv:2102. 12092, 2021. May, C. , Wang, A. , Bordia, S. , Bowman, S. R. , and Rudinger,R. Onmeasuringsocialbiasesinsentenceen- Reimers,N. andGurevych,I. Sentence-bert: Sentenceem- coders. InConferenceoftheNorthAmericanChapterof beddings using siamese bert-networks. In Conference theAssociationforComputationalLinguistics(NAACL), onEmpiricalMethodsinNaturalLanguageProcessing 2019. (EMNLP),2019. Mikolov, T. , Chen, K. , Corrado, G. S. , and Dean, J. Effi- Robertson, S. The Probabilistic Relevance Framework: cientestimationofwordrepresentationsinvectorspace. BM25andBeyond. FoundationsandTrends inInfor- arXivpreprintarXiv:1301. 3781,2013. mationRetrieval,2009. TextandCodeEmbeddingsbyContrastivePre-Training Rudinger, R. , Naradowsky, J. , Leonard, B. , and Durme, van den Oord, A. , Dieleman, S. , Zen, H. , Simonyan, K. , B. V. Gender bias in coreference resolution. arXiv Vinyals, O.",
+    "chunk_size": 997,
+    "word_count": 113,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 62,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_62",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "Rudinger, R. , Naradowsky, J. , Leonard, B. , and Durme, van den Oord, A. , Dieleman, S. , Zen, H. , Simonyan, K. , B. V. Gender bias in coreference resolution. arXiv Vinyals, O. , Graves, A. , Kalchbrenner, N. , Senior, A. , preprintarXiv:1804. 09301,2018. andKavukcuoglu,K. Wavenet: Agenerativemodelfor rawaudio. arXivpreprintarXiv:1609. 03499,2016. Sachan, D. S. , Patwary, M. , Shoeybi, M. , Kant, N. , Ping, W. , Hamilton, W. I. , and Catanzaro, B. End-to-end van den Oord, A. , Li, Y. , and Vinyals, O. Representa- training of neural retrievers for open-domain question tion learning with contrastive predictive coding. arXiv answering. In Zong, C. , Xia, F. , Li, W. , and Navigli, preprintarXiv:1807. 03748,2018. R. (eds. ),ProceedingsofACL IJCNLP,pp. 6648 6662. Vaswani,A. ,Shazeer,N. ,Parmar,N. ,Uszkoreit,J. ,Jones, ACL,2021. I. ,Gomez,A. N. ,Kaiser,I. u. ,andPolosukhin,I. Atten- Santhanam, K. , Khattab, O. , Saad-Falcon, J. , Potts, C. , tionisallyouneed.",
+    "chunk_size": 969,
+    "word_count": 150,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 63,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_63",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "Vaswani,A. ,Shazeer,N. ,Parmar,N. ,Uszkoreit,J. ,Jones, ACL,2021. I. ,Gomez,A. N. ,Kaiser,I. u. ,andPolosukhin,I. Atten- Santhanam, K. , Khattab, O. , Saad-Falcon, J. , Potts, C. , tionisallyouneed. InAdvancesinNeuralInformation and Zaharia, M. Colbertv2: Effective and efficient re- ProcessingSystems(NeuriPS),2017. trieval via lightweight late interaction. arXiv preprint Vervaeke,J. ,Lillicrap,T. P. ,andRichards,B. A. Relevance arXiv:2112. 01488,2021. realizationandtheemergingframeworkincognitivesci- ence. Journal of logic and computation, 22(1):79 99, Schroff, F. , Kalenichenko, D. , and Philbin, J. Facenet: A 2012. unified embedding for face recognition and clustering. In Computer Vision and Pattern Recognition (CVPR), Wang,W. ,Wei,F. ,Dong,I. ,Bao,H. ,Yang,N. ,andZhou, 2015. M. Minilm: Deep self-attention distillation for task- agnosticcompressionofpre-trainedtransformers. arXiv Shen, D. , Zheng, M. , Shen, Y. , Qu, Y. , and Chen, W. A preprintarXiv:2002. 10957,2020.",
+    "chunk_size": 984,
+    "word_count": 120,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 64,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_64",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "M. Minilm: Deep self-attention distillation for task- agnosticcompressionofpre-trainedtransformers. arXiv Shen, D. , Zheng, M. , Shen, Y. , Qu, Y. , and Chen, W. A preprintarXiv:2002. 10957,2020. simplebuttough-to-beatdataaugmentationapproachfor natural language understanding and generation. arXiv Wei,J. W. andZou,K. EDA:easydataaugmentationtech- preprintarXiv:2009. 13818,2020. niques for boosting performance on text classification tasks. arXivpreprintarXiv:1901. 11196,2019. Socher, R. , Perelygin, A. , Wu, J. , Chuang, J. , Manning, C. D. ,Ng,A. ,andPotts,C. Recursivedeepmodelsfor Williams, A. , Nangia, N. , and Bowman, S. A broad- semanticcompositionalityoverasentimenttreebank. In coverage challenge corpus for sentence understanding ConferenceonEmpiricalMethodsinNaturalLanguage throughinference. InConferenceoftheNorthAmerican Processing(EMNLP),2013. Chapter of the Association for Computational Linguis- tics(NAACL). ACL,2018. Sohn, K.",
+    "chunk_size": 949,
+    "word_count": 102,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 65,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_65",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "throughinference. InConferenceoftheNorthAmerican Processing(EMNLP),2013. Chapter of the Association for Computational Linguis- tics(NAACL). ACL,2018. Sohn, K. Improved deep metric learning with multi-class n-pairlossobjective. InAdvancesinNeuralInformation Wu, Z. , Xiong, Y. , Yu, S. X. , and Lin, D. Unsupervised ProcessingSystems(NeuriPS),2016. feature learning via non-parametric instance-level dis- crimination. In Computer Vision and Pattern Recogni- Solaiman, I. and Dennison, C. Process for adapting lan- tion(CVPR),2018. guage models to society (PALMS) with values-targeted datasets. arXivpreprintarXiv:2106. 10328,2021. Xiong, I. , Xiong, C. , Li, Y. , Tang, K. , Liu, J. , Bennett, P. N. , Ahmed, J. , and Overwijk, A. Approximate near- Su, J. , Cao, J. , Liu, W. , and Ou, Y. Whitening sentence estneighbornegativecontrastivelearningfordensetext representations for better semantics and faster retrieval. retrieval. arXivpreprintarXiv:2007. 00808,2020. arXivpreprintarXiv:2103.",
+    "chunk_size": 989,
+    "word_count": 123,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 66,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_66",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "sentence estneighbornegativecontrastivelearningfordensetext representations for better semantics and faster retrieval. retrieval. arXivpreprintarXiv:2007. 00808,2020. arXivpreprintarXiv:2103. 15316,2021. Yih,W. -t. ,Toutanova,K. ,Platt,J. C. ,andMeek,C. Learn- Sun,C. ,Myers,A. ,Vondrick,C. ,Murphy,K. ,andSchmid, ing discriminative projections for text similarity mea- C. Videobert: A joint model for video and language sures. In Conference on Computational Natural Lan- representationlearning. InInternationalConferenceon guageLearning(CoNLL). ACL,2011. ComputerVision(ICCV),2019. Zbontar,J. ,Jing,I. ,Misra,I. ,LeCun,Y. ,andDeny,S. Bar- Thakur, N. , Reimers, N. , Ru ckle , A. , Srivastava, A. , and low twins: Self-supervised learning via redundancy re- Gurevych, I. BEIR: A heterogenous benchmark for duction. InInternationalConferenceonMachineLearn- zero-shot evaluation of information retrieval models. ing(ICML),2021. In Advances in Neural Information Processing Systems Zhang, Y. , He, R.",
+    "chunk_size": 997,
+    "word_count": 110,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 67,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_67",
+    "created_at": "2025-07-22T23:16:30.206502"
+  },
+  {
+    "text": "for duction. InInternationalConferenceonMachineLearn- zero-shot evaluation of information retrieval models. ing(ICML),2021. In Advances in Neural Information Processing Systems Zhang, Y. , He, R. , Liu, Z. , Lim, K. H. , and Bing, I. (NeuriPS),2021. Anunsupervisedsentenceembeddingmethodbymutual Tian, Y. , Krishnan, D. , and Isola, P. Contrastive multi- information maximization. In Conference on Empiri- viewcoding. EuropeanConferenceonComputerVision calMethodsinNaturalLanguageProcessing(EMNLP), (ECCV),2019. 2020. TextandCodeEmbeddingsbyContrastivePre-Training Zhao, J. , Wang, T. , Yatskar, M. , Ordonez, V. , and Chang, K. Genderbiasincoreferenceresolution:Evaluationand debiasing methods. arXiv preprint arXiv:1804. 06876, 2018.",
+    "chunk_size": 735,
+    "word_count": 81,
+    "document_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training",
+    "chunk_index": 68,
+    "chunk_id": "2201.10005-Text and Code Embeddings by Contrastive Pre-Training_chunk_68",
+    "created_at": "2025-07-22T23:16:30.206502"
+  }
+]

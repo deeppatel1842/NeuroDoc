@@ -1,0 +1,31 @@
+{
+  "session_id": "7d06130b-bc62-4716-be59-efef9257595e",
+  "user_id": "user_1753309253301",
+  "metadata": {
+    "source": "web_chat"
+  },
+  "created_at": "2025-07-23T22:20:53.613519",
+  "last_activity": "2025-07-23T22:21:09.035502",
+  "conversation_history": [
+    {
+      "turn_id": "2efb90ee-8886-454b-a54a-b501218ce10c",
+      "question": "who are you",
+      "answer": "I'm NeuroDoc, your AI-powered document analysis assistant. I specialize in helping you understand and explore research papers in AI, machine learning, and related fields.",
+      "citations": [],
+      "metadata": {
+        "model_used": "fallback/extractive",
+        "processing_time": 0.0,
+        "context_length": 4089,
+        "retrieved_chunks": 15,
+        "session_id": "7d06130b-bc62-4716-be59-efef9257595e",
+        "endpoint_processing_time": 0.031197,
+        "total_retrieved_chunks": 15
+      },
+      "timestamp": "2025-07-23T22:20:58.163390"
+    }
+  ],
+  "document_ids": [
+    "1f19c892-6e00-4077-ab51-60ba1af82c49"
+  ],
+  "is_active": true
+}

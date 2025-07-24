@@ -1,0 +1,20 @@
+{
+  "document_id": "2005.14165-Language Models are Few-Shot Learners",
+  "filename": "2005.14165_Language Models are Few-Shot Learners.pdf",
+  "session_id": "setup",
+  "content_hash": "97fd272f1fdfc18677462d0292f5fbf26ca86b4d1b485c2dba03269b643a0e83",
+  "text_hash": "f1aaed930ae67e9e28fa2342e06ee481dc4a58be24b0c29049d841df043d8972",
+  "file_size": 6768044,
+  "text_length": 236585,
+  "chunk_count": 325,
+  "processed_at": "2025-07-22T23:16:19.525642",
+  "processing_config": {
+    "chunk_size": 1000,
+    "chunk_overlap": 200
+  },
+  "extraction_metadata": {
+    "word_count": 38330,
+    "character_count": 236585,
+    "estimated_pages": 118
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "document_id": "337ab094-ce92-42f5-bbf6-89bb4618c27a",
+  "filename": "Deep_Resume.pdf",
+  "session_id": "2533eab5-b69d-4aeb-9bee-a26f111cda33",
+  "content_hash": "d07327f304cd6c55f00acae188301688f2e13a38654d882eebab897113e432db",
+  "text_hash": "b40eeeade7fe3e22f039dba62c1813e0eb9ec5a714cc74ce4b51b76e264b5d5b",
+  "file_size": 89041,
+  "text_length": 3315,
+  "chunk_count": 5,
+  "processed_at": "2025-07-23T22:17:36.171698",
+  "processing_config": {
+    "chunk_size": 1000,
+    "chunk_overlap": 200
+  },
+  "extraction_metadata": {
+    "word_count": 440,
+    "character_count": 3315,
+    "estimated_pages": 1
+  }
+}

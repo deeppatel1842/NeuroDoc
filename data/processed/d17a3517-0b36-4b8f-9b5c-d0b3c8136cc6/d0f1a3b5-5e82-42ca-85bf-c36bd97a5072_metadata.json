@@ -1,0 +1,20 @@
+{
+  "document_id": "d0f1a3b5-5e82-42ca-85bf-c36bd97a5072",
+  "filename": "Deep_Cover_Letter.pdf",
+  "session_id": "d17a3517-0b36-4b8f-9b5c-d0b3c8136cc6",
+  "content_hash": "387a935a6059631e57267c59f1e878f454d76d58384440ebaebf95494a01082b",
+  "text_hash": "0db85381a97891f1c8757218e7098bfe3cac99178deada05889f6d686ca8a929",
+  "file_size": 52839,
+  "text_length": 2291,
+  "chunk_count": 3,
+  "processed_at": "2025-07-23T21:44:40.166148",
+  "processing_config": {
+    "chunk_size": 1000,
+    "chunk_overlap": 200
+  },
+  "extraction_metadata": {
+    "word_count": 322,
+    "character_count": 2291,
+    "estimated_pages": 1
+  }
+}

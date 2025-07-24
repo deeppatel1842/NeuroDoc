@@ -1,0 +1,8 @@
+{
+  "dimension": 384,
+  "index_type": "flat",
+  "distance_metric": "cosine",
+  "id_counter": 3,
+  "saved_at": "2025-07-22T18:10:49.850009",
+  "vector_count": 3
+}

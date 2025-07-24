@@ -1,0 +1,20 @@
+{
+  "document_id": "2302.13971-LLaMA- Open and Efficient Foundation Language Models",
+  "filename": "2302.13971_LLaMA_ Open and Efficient Foundation Language Models.pdf",
+  "session_id": "setup",
+  "content_hash": "2e663675ae36ad12adb2f5a05281bac2747ecf8d23d92bedd9f937a89fee7136",
+  "text_hash": "fcb8ef4eaa061d0c4c483ab1a5afa12b54bf62a3e9acab27ca7876f4532ea892",
+  "file_size": 726566,
+  "text_length": 88040,
+  "chunk_count": 121,
+  "processed_at": "2025-07-22T23:17:04.549007",
+  "processing_config": {
+    "chunk_size": 1000,
+    "chunk_overlap": 200
+  },
+  "extraction_metadata": {
+    "word_count": 14304,
+    "character_count": 88040,
+    "estimated_pages": 44
+  }
+}

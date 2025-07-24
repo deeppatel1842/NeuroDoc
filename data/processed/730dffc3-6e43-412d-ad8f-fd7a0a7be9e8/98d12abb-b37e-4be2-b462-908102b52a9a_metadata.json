@@ -1,0 +1,20 @@
+{
+  "document_id": "98d12abb-b37e-4be2-b462-908102b52a9a",
+  "filename": "Embedding_1.pdf",
+  "session_id": "730dffc3-6e43-412d-ad8f-fd7a0a7be9e8",
+  "content_hash": "92366d22fc0521350d6cbe0ad72bcee754f90e88181d7b4a8e2adb1e7e594fec",
+  "text_hash": "51522ddcaa15169b17ed2fed42e31168d0c72d8525d789d5b4206e90100782b0",
+  "file_size": 548961,
+  "text_length": 44104,
+  "chunk_count": 58,
+  "processed_at": "2025-07-23T21:33:37.923369",
+  "processing_config": {
+    "chunk_size": 1000,
+    "chunk_overlap": 200
+  },
+  "extraction_metadata": {
+    "word_count": 6667,
+    "character_count": 44104,
+    "estimated_pages": 22
+  }
+}
