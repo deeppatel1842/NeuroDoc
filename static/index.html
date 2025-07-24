@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroDoc Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-container {
+            width: 90%;
+            max-width: 800px;
+            height: 80vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: #1976d2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .clear-history-btn {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .clear-history-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .chat-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .chat-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            max-width: 80%;
+        }
+        
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            white-space: normal;
+            line-height: 1.4;
+        }
+        
+        .message.user .message-bubble {
+            background: #1976d2;
+            color: white;
+        }
+        
+        .message.assistant .message-bubble {
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .message-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: #f5f5f5;
+            border-radius: 18px;
+            max-width: 120px;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { opacity: 0.3; }
+            40% { opacity: 1; }
+        }
+        
+        .input-container {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            background: #f8f9fa;
+        }
+        
+        .input-form {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+            resize: none;
+            min-height: 20px;
+            max-height: 100px;
+        }
+        
+        .send-button {
+            padding: 12px 24px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        
+        .send-button:hover:not(:disabled) {
+            background: #1565c0;
+        }
+        
+        .send-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 10px 20px;
+            border-left: 4px solid #c62828;
+        }
+        
+        .status-message {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            padding: 5px;
+        }
+        
+        /* Document Upload Styles */
+        .upload-section {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            background: #f8f9fa;
+        }
+        
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #1976d2;
+            background: rgba(25, 118, 210, 0.05);
+        }
+        
+        .upload-area.dragover {
+            border-color: #1976d2;
+            background: rgba(25, 118, 210, 0.1);
+        }
+        
+        .upload-text {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .upload-button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .upload-progress {
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #1976d2;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .uploaded-docs {
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .doc-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .doc-name {
+            font-size: 13px;
+            color: #333;
+        }
+        
+        .doc-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .doc-btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        
+        .generate-btn {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .delete-btn {
+            background: #f44336;
+            color: white;
+        }
+        
+        .suggested-question {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .suggested-question:hover {
+            background: linear-gradient(135deg, #357abd, #2a5d8a);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <button class="clear-history-btn" onclick="chat.clearHistory()">🗑️ Clear History</button>
+            <h1>🧠 NeuroDoc Chat</h1>
+            <p>Ask questions about your documents and get AI-powered insights</p>
+        </div>
+        
+        <!-- Document Upload Section -->
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-text">📄 Drop PDF files here or click to upload</div>
+                <button class="upload-button" onclick="document.getElementById('fileInput').click()">Choose Files</button>
+                <input type="file" id="fileInput" accept=".pdf" multiple style="display: none;">
+            </div>
+            
+            <div class="upload-progress" id="uploadProgress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div style="text-align: center; margin-top: 5px; font-size: 12px;" id="progressText">Uploading...</div>
+            </div>
+            
+            <div class="uploaded-docs" id="uploadedDocs">
+                <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px;">📚 Uploaded Documents:</div>
+                <div id="docsList"></div>
+            </div>
+        </div>
+        
+        <div class="messages-container" id="messages">
+            <div class="message assistant">
+                <div class="message-bubble">
+                    Hello! I'm NeuroDoc, your AI-powered document analysis assistant. How can I help you today?
+                    <div class="message-info">Just now</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typing">
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+            <span id="thinking-text">NeuroDoc is analyzing documents...</span>
+        </div>
+        
+        <div class="input-container">
+            <form class="input-form" id="messageForm">
+                <textarea 
+                    class="message-input" 
+                    id="messageInput" 
+                    placeholder="Ask a question about your documents..."
+                    rows="1"
+                ></textarea>
+                <button type="submit" class="send-button" id="sendButton">Send</button>
+            </form>
+            <div class="status-message" id="status">Ready to chat</div>
+        </div>
+    </div>
+
+    <script>
+        class NeuroDocChat {
+            constructor() {
+                this.sessionId = null;
+                this.conversationHistory = []; // Chat history
+                this.uploadedDocuments = []; // Uploaded docs
+                this.messagesContainer = document.getElementById('messages');
+                this.messageInput = document.getElementById('messageInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.messageForm = document.getElementById('messageForm');
+                this.typingIndicator = document.getElementById('typing');
+                this.statusElement = document.getElementById('status');
+                
+                // Upload elements
+                this.uploadArea = document.getElementById('uploadArea');
+                this.fileInput = document.getElementById('fileInput');
+                this.uploadProgress = document.getElementById('uploadProgress');
+                this.progressFill = document.getElementById('progressFill');
+                this.progressText = document.getElementById('progressText');
+                this.uploadedDocs = document.getElementById('uploadedDocs');
+                this.docsList = document.getElementById('docsList');
+                
+                this.init();
+            }
+            
+            async init() {
+                await this.createSession();
+                this.loadConversationHistory(); // Load chat history
+                this.setupEventListeners();
+                this.setupUploadListeners(); // Setup file uploads
+                this.autoResizeTextarea();
+            }
+            
+            async createSession() {
+                try {
+                    this.updateStatus('Initializing chat session...');
+                    
+                    const response = await fetch('http://localhost:8000/session', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            user_id: `user_${Date.now()}`,
+                            metadata: { source: 'web_chat' }
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Session creation failed: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    this.sessionId = data.session_id;
+                    this.updateStatus('Ready to chat');
+                    
+                } catch (error) {
+                    console.error('Failed to create session:', error);
+                    this.showError('Failed to initialize chat session. Please refresh the page.');
+                }
+            }
+            
+            setupEventListeners() {
+                this.messageForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.sendMessage();
+                });
+                
+                this.messageInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+                
+                this.messageInput.addEventListener('input', () => {
+                    this.autoResizeTextarea();
+                });
+            }
+            
+            autoResizeTextarea() {
+                this.messageInput.style.height = 'auto';
+                this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 100) + 'px';
+            }
+            
+            async sendMessage() {
+                const message = this.messageInput.value.trim();
+                if (!message || !this.sessionId) return;
+                
+                // Add user message
+                this.addMessage(message, true);
+                this.messageInput.value = '';
+                this.autoResizeTextarea();
+                
+                // Show typing indicator
+                this.showTyping(true);
+                this.updateStatus('Processing your question...');
+                this.sendButton.disabled = true;
+                
+                try {
+                    const response = await fetch('http://localhost:8000/query', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Session-Id': this.sessionId
+                        },
+                        body: JSON.stringify({
+                            question: message,
+                            top_k: 15,  // Increased from 5 to 15 for more comprehensive answers
+                            context_limit: 10, // Increased for better conversation context
+                            prioritize_session_docs: this.uploadedDocuments.length > 0, // Prioritize if docs uploaded
+                            conversation_history: this.getConversationSummary() // Include conversation context
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Query failed: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Show the response
+                    let aiMessage = data.answer;
+                    
+                    this.addMessage(aiMessage, false);
+                    this.updateStatus('Ready to chat');
+                    
+                } catch (error) {
+                    console.error('Failed to send message:', error);
+                    this.addMessage('Sorry, I encountered an error while processing your question. Please try again.', false);
+                    this.updateStatus('Error occurred - try again');
+                } finally {
+                    this.showTyping(false);
+                    this.sendButton.disabled = false;
+                    this.messageInput.focus();
+                }
+            }
+            
+            addMessage(text, isUser) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
+                
+                const bubbleDiv = document.createElement('div');
+                bubbleDiv.className = 'message-bubble';
+                
+                // Check if this is a question suggestions message
+                if (!isUser && text.includes('💡 Here are some suggested questions')) {
+                    // Split text and questions
+                    const parts = text.split('\n\n');
+                    const introText = parts[0];
+                    const questionsText = parts[1];
+                    
+                    bubbleDiv.innerHTML = `${introText}<br><br>`;
+                    
+                    // Make questions clickable
+                    if (questionsText) {
+                        const questions = questionsText.split('\n').filter(q => q.trim());
+                        questions.forEach(question => {
+                            const cleanQuestion = question.replace('• ', '');
+                            const questionBtn = document.createElement('div');
+                            questionBtn.className = 'suggested-question';
+                            questionBtn.textContent = cleanQuestion;
+                            questionBtn.onclick = () => {
+                                this.messageInput.value = cleanQuestion;
+                                this.sendMessage();
+                            };
+                            bubbleDiv.appendChild(questionBtn);
+                        });
+                    }
+                } else {
+                    bubbleDiv.textContent = text;
+                }
+                
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'message-info';
+                infoDiv.textContent = new Date().toLocaleTimeString();
+                
+                bubbleDiv.appendChild(infoDiv);
+                messageDiv.appendChild(bubbleDiv);
+                
+                this.messagesContainer.appendChild(messageDiv);
+                
+                // Save to conversation history
+                this.conversationHistory.push({
+                    text: text,
+                    isUser: isUser,
+                    timestamp: new Date().toISOString()
+                });
+                this.saveConversationHistory();
+                
+                this.scrollToBottom();
+            }
+            
+            saveConversationHistory() {
+                if (this.sessionId) {
+                    try {
+                        localStorage.setItem(`neurodoc_history_${this.sessionId}`, JSON.stringify(this.conversationHistory));
+                    } catch (error) {
+                        console.warn('Failed to save conversation history:', error);
+                    }
+                }
+            }
+            
+            loadConversationHistory() {
+                if (this.sessionId) {
+                    try {
+                        const saved = localStorage.getItem(`neurodoc_history_${this.sessionId}`);
+                        if (saved) {
+                            this.conversationHistory = JSON.parse(saved);
+                            
+                            // Clear current messages except welcome message
+                            const welcomeMessage = this.messagesContainer.querySelector('.message.assistant');
+                            this.messagesContainer.innerHTML = '';
+                            if (welcomeMessage) {
+                                this.messagesContainer.appendChild(welcomeMessage);
+                            }
+                            
+                            // Restore messages
+                            this.conversationHistory.forEach(msg => {
+                                if (msg.text !== "Hello! I'm NeuroDoc, your AI-powered document analysis assistant. How can I help you today?") {
+                                    this.displayMessage(msg.text, msg.isUser, msg.timestamp);
+                                }
+                            });
+                        }
+                    } catch (error) {
+                        console.warn('Failed to load conversation history:', error);
+                        this.conversationHistory = [];
+                    }
+                }
+            }
+            
+            displayMessage(text, isUser, timestamp) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
+                
+                const bubbleDiv = document.createElement('div');
+                bubbleDiv.className = 'message-bubble';
+                bubbleDiv.textContent = text;
+                
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'message-info';
+                const date = new Date(timestamp);
+                infoDiv.textContent = date.toLocaleTimeString();
+                
+                bubbleDiv.appendChild(infoDiv);
+                messageDiv.appendChild(bubbleDiv);
+                
+                this.messagesContainer.appendChild(messageDiv);
+            }
+            
+            // Add method to get conversation summary for API
+            getConversationSummary() {
+                return this.conversationHistory.slice(-10).map(msg => ({
+                    role: msg.isUser ? 'user' : 'assistant',
+                    content: msg.text.split('\n\n')[0] // Remove confidence info from AI messages
+                }));
+            }
+            
+            showTyping(show) {
+                if (show) {
+                    this.typingIndicator.style.display = 'flex';
+                    this.messagesContainer.appendChild(this.typingIndicator);
+                    this.startThinkingAnimation();
+                } else {
+                    this.typingIndicator.style.display = 'none';
+                    this.stopThinkingAnimation();
+                }
+                this.scrollToBottom();
+            }
+            
+            startThinkingAnimation() {
+                const thinkingText = document.getElementById('thinking-text');
+                let dots = '';
+                
+                this.thinkingInterval = setInterval(() => {
+                    dots = dots.length >= 3 ? '' : dots + '.';
+                    thinkingText.textContent = ``;
+                }, 500); // Change dots every 500ms
+            }
+            
+            stopThinkingAnimation() {
+                if (this.thinkingInterval) {
+                    clearInterval(this.thinkingInterval);
+                    this.thinkingInterval = null;
+                }
+            }
+            
+            showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = message;
+                
+                // Insert after header
+                this.messagesContainer.parentNode.insertBefore(
+                    errorDiv, 
+                    this.messagesContainer
+                );
+            }
+            
+            updateStatus(message) {
+                this.statusElement.textContent = message;
+            }
+            
+            scrollToBottom() {
+                setTimeout(() => {
+                    this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+                }, 100);
+            }
+            
+            clearHistory() {
+                if (confirm('Clear conversation history? This cannot be undone.')) {
+                    this.conversationHistory = [];
+                    if (this.sessionId) {
+                        localStorage.removeItem(`neurodoc_history_${this.sessionId}`);
+                    }
+                    
+                    // Clear messages container and restore welcome message
+                    this.messagesContainer.innerHTML = `
+                        <div class="message assistant">
+                            <div class="message-bubble">
+                                Hello! I'm NeuroDoc, your AI-powered document analysis assistant. How can I help you today?
+                                <div class="message-info">Just now</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    this.updateStatus('Conversation history cleared');
+                    setTimeout(() => this.updateStatus('Ready to chat'), 2000);
+                }
+            }
+            
+            // === FILE UPLOAD METHODS ===
+            
+            setupUploadListeners() {
+                // File input change
+                this.fileInput.addEventListener('change', (e) => {
+                    this.handleFiles(e.target.files);
+                });
+                
+                // Drag and drop
+                this.uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    this.uploadArea.classList.add('dragover');
+                });
+                
+                this.uploadArea.addEventListener('dragleave', () => {
+                    this.uploadArea.classList.remove('dragover');
+                });
+                
+                this.uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    this.uploadArea.classList.remove('dragover');
+                    this.handleFiles(e.dataTransfer.files);
+                });
+            }
+            
+            async handleFiles(files) {
+                const pdfFiles = Array.from(files).filter(file => 
+                    file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+                );
+                
+                if (pdfFiles.length === 0) {
+                    alert('Please select PDF files only.');
+                    return;
+                }
+                
+                for (const file of pdfFiles) {
+                    await this.uploadFile(file);
+                }
+            }
+            
+            async uploadFile(file) {
+                try {
+                    this.showUploadProgress(true, `Uploading ${file.name}...`);
+                    
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    
+                    const response = await fetch('http://localhost:8000/upload', {
+                        method: 'POST',
+                        headers: {
+                            'X-Session-Id': this.sessionId
+                        },
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Upload failed: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    // Add to uploaded documents
+                    this.uploadedDocuments.push({
+                        id: result.document_id,
+                        name: result.filename,
+                        chunks: result.chunk_count,
+                        uploadTime: new Date().toISOString()
+                    });
+                    
+                    this.updateDocumentsList();
+                    this.showUploadProgress(false);
+                    
+                    // Add success message to chat
+                    this.addMessage(`📄 Successfully uploaded "${file.name}" (${result.chunk_count} chunks processed)`, false);
+                    
+                    // Auto-generate sample questions
+                    this.generateSampleQuestions(result.document_id, result.filename);
+                    
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    this.showUploadProgress(false);
+                    this.addMessage(`❌ Failed to upload "${file.name}": ${error.message}`, false);
+                }
+            }
+            
+            showUploadProgress(show, text = '') {
+                if (show) {
+                    this.uploadProgress.style.display = 'block';
+                    this.progressText.textContent = text;
+                    this.progressFill.style.width = '100%';
+                } else {
+                    this.uploadProgress.style.display = 'none';
+                    this.progressFill.style.width = '0%';
+                }
+            }
+            
+            updateDocumentsList() {
+                if (this.uploadedDocuments.length === 0) {
+                    this.uploadedDocs.style.display = 'none';
+                    return;
+                }
+                
+                this.uploadedDocs.style.display = 'block';
+                this.docsList.innerHTML = this.uploadedDocuments.map(doc => `
+                    <div class="doc-item">
+                        <span class="doc-name">📄 ${doc.name} (${doc.chunks} chunks)</span>
+                        <div class="doc-actions">
+                            <button class="doc-btn generate-btn" onclick="chat.generateQuestionsForDoc('${doc.id}', '${doc.name}')">
+                                💡 Generate Questions
+                            </button>
+                            <button class="doc-btn delete-btn" onclick="chat.deleteDocument('${doc.id}', '${doc.name}')">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            async generateSampleQuestions(docId, docName) {
+                try {
+                    // Generate document-specific questions
+                    const baseQuestions = [
+                        `What is the main purpose or summary of ${docName}?`,
+                        `What are the key points discussed in ${docName}?`,
+                        `Can you explain the important concepts from ${docName}?`,
+                        `What are the conclusions or findings in ${docName}?`,
+                        `What information does ${docName} contain?`
+                    ];
+                    
+                    // For resumes, add specific questions
+                    if (docName.toLowerCase().includes('resume') || docName.toLowerCase().includes('cv')) {
+                        baseQuestions.unshift(
+                            "What are the candidate's key skills and qualifications?",
+                            "What is the candidate's work experience?",
+                            "What education background does the candidate have?",
+                            "What are the candidate's notable achievements?"
+                        );
+                    }
+                    
+                    // For research papers
+                    if (docName.toLowerCase().includes('paper') || docName.toLowerCase().includes('research')) {
+                        baseQuestions.unshift(
+                            "What is the research methodology used?",
+                            "What are the main findings and results?",
+                            "What is the contribution of this research?",
+                            "What are the limitations mentioned?"
+                        );
+                    }
+                    
+                    const questionsText = baseQuestions.slice(0, 5).map(q => `• ${q}`).join('\n');
+                    
+                    this.addMessage(`💡 Here are some suggested questions for "${docName}":\n\n${questionsText}\n\nClick on any question to ask it!`, false);
+                    
+                } catch (error) {
+                    console.error('Question generation error:', error);
+                }
+            }
+            
+            generateQuestionsForDoc(docId, docName) {
+                this.generateSampleQuestions(docId, docName);
+            }
+            
+            async deleteDocument(docId, docName) {
+                if (!confirm(`Delete "${docName}"? This cannot be undone.`)) {
+                    return;
+                }
+                
+                try {
+                    // Remove from local list
+                    this.uploadedDocuments = this.uploadedDocuments.filter(doc => doc.id !== docId);
+                    this.updateDocumentsList();
+                    
+                    this.addMessage(`🗑️ Deleted document "${docName}"`, false);
+                    
+                } catch (error) {
+                    console.error('Delete error:', error);
+                    this.addMessage(`❌ Failed to delete "${docName}": ${error.message}`, false);
+                }
+            }
+        }
+        
+        // Initialize chat when page loads
+        let chat; // Global chat instance
+        document.addEventListener('DOMContentLoaded', () => {
+            chat = new NeuroDocChat();
+        });
+    </script>
+</body>
+</html>
