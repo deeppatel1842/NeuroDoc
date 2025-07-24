@@ -1,4 +1,4 @@
-```markdown
+
 # NeuroDoc
 
 An intelligent document analysis system powered by AI that provides comprehensive answers from research documents with accurate citations and conversation memory.
@@ -33,8 +33,6 @@ NeuroDoc is a sophisticated AI-powered document analysis platform that combines 
 *Real-time conversation with the AI assistant, showing intelligent responses and suggested questions for uploaded documents.*
 
 ## 🔄 System Architecture & Workflow
-
-![NeuroDoc System Workflow](https://raw.githubusercontent.com/deeppatel1842/NeuroDoc/main/NeuroDoc_Flow/NeuroDoc_Workflow.png)
 
 ### Core Components Flow:
 
@@ -293,16 +291,6 @@ ngrok http 8000
 - **Real-time Processing**: Live document upload and analysis
 - **Session Management**: Persistent conversation history
 - **Smart Suggestions**: Auto-generated relevant questions
-
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 
 ## 👨‍💻 Author
