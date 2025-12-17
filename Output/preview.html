@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroDoc: Complete RAG Lifecycle (Detailed)</title>
+    <style>
+        :root {
+            --bg: #0F172A;
+            --surface: #1E293B;
+            --border: #334155;
+            --text: #F8FAFC;
+            --text-dim: #94A3B8;
+            
+            /* Phase Colors - Neon Palette */
+            --p1: #3B82F6; /* Blue: Ingest */
+            --p2: #8B5CF6; /* Purple: Index */
+            --p3: #10B981; /* Green: Retrieve */
+            --p4: #F59E0B; /* Orange: Generate */
+            --p5: #EC4899; /* Pink: Memory */
+            --p6: #06B6D4; /* Cyan: Metrics/Opt */
+            
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            --font-main: system-ui, -apple-system, sans-serif;
+        }
+
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* HEADER */
+        header {
+            height: 60px; background: var(--surface); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+            z-index: 10;
+        }
+        .brand { font-weight: 800; font-size: 18px; display: flex; align-items: center; gap: 10px; color: white; }
+        .brand-dot { width: 10px; height: 10px; background: var(--p3); border-radius: 50%; box-shadow: 0 0 10px var(--p3); }
+
+        /* TIMELINE */
+        .timeline { display: flex; gap: 4px; background: #020617; padding: 4px; border-radius: 8px; overflow-x: auto; }
+        .step-dot {
+            padding: 6px 12px; font-size: 11px; font-weight: 600; color: var(--text-dim); border-radius: 6px; 
+            cursor: default; white-space: nowrap; transition: all 0.3s; border: 1px solid transparent;
+        }
+        
+        /* Active States */
+        .step-dot.active[data-p="1"] { background: rgba(59,130,246,0.15); color: var(--p1); border-color: var(--p1); }
+        .step-dot.active[data-p="2"] { background: rgba(139,92,246,0.15); color: var(--p2); border-color: var(--p2); }
+        .step-dot.active[data-p="3"] { background: rgba(16,185,129,0.15); color: var(--p3); border-color: var(--p3); }
+        .step-dot.active[data-p="4"] { background: rgba(245,158,11,0.15); color: var(--p4); border-color: var(--p4); }
+        .step-dot.active[data-p="5"] { background: rgba(236,72,153,0.15); color: var(--p5); border-color: var(--p5); }
+        .step-dot.active[data-p="6"] { background: rgba(6,182,212,0.15); color: var(--p6); border-color: var(--p6); }
+
+        .controls { display: flex; gap: 10px; }
+        .controls button {
+            background: var(--surface); color: var(--text); border: 1px solid var(--border); 
+            padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;
+            transition: all 0.2s;
+        }
+        .controls button.primary { background: var(--p1); color: white; border-color: var(--p1); }
+        .controls button:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .controls button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* LAYOUT */
+        main { display: grid; grid-template-columns: 1fr 420px; height: calc(100vh - 60px); }
+
+        /* DIAGRAM */
+        .diagram-container {
+            position: relative; background-image: radial-gradient(#334155 1px, transparent 1px);
+            background-size: 24px 24px; display: flex; flex-direction: column; overflow: hidden;
+        }
+        svg { width: 100%; height: 100%; }
+
+        /* NODES */
+        .node rect { fill: var(--surface); stroke: var(--border); stroke-width: 2px; rx: 8; transition: all 0.4s; }
+        .node text { fill: var(--text); font-weight: 600; font-size: 11px; text-anchor: middle; pointer-events: none; }
+        
+        /* Node Glow Effects */
+        .node.active-1 rect { stroke: var(--p1); fill: rgba(59,130,246,0.1); filter: drop-shadow(0 0 8px var(--p1)); }
+        .node.active-2 rect { stroke: var(--p2); fill: rgba(139,92,246,0.1); filter: drop-shadow(0 0 8px var(--p2)); }
+        .node.active-3 rect { stroke: var(--p3); fill: rgba(16,185,129,0.1); filter: drop-shadow(0 0 8px var(--p3)); }
+        .node.active-4 rect { stroke: var(--p4); fill: rgba(245,158,11,0.1); filter: drop-shadow(0 0 8px var(--p4)); }
+        .node.active-5 rect { stroke: var(--p5); fill: rgba(236,72,153,0.1); filter: drop-shadow(0 0 8px var(--p5)); }
+        .node.active-6 rect { stroke: var(--p6); fill: rgba(6,182,212,0.1); filter: drop-shadow(0 0 8px var(--p6)); }
+
+        /* PATHS */
+        .path { fill: none; stroke: var(--border); stroke-width: 2px; transition: stroke 0.3s; }
+        .path.active { stroke-dasharray: 8; animation: flow 0.6s linear infinite; stroke-width: 3px; }
+        
+        .path.active-1 { stroke: var(--p1); marker-end: url(#arrow-1); }
+        .path.active-2 { stroke: var(--p2); marker-end: url(#arrow-2); }
+        .path.active-3 { stroke: var(--p3); marker-end: url(#arrow-3); }
+        .path.active-4 { stroke: var(--p4); marker-end: url(#arrow-4); }
+        .path.active-5 { stroke: var(--p5); marker-end: url(#arrow-5); }
+        .path.active-6 { stroke: var(--p6); marker-end: url(#arrow-6); }
+
+        @keyframes flow { to { stroke-dashoffset: -16; } }
+
+        /* SIDEBAR */
+        .sidebar {
+            background: var(--surface); border-left: 1px solid var(--border);
+            padding: 25px; display: flex; flex-direction: column; gap: 20px;
+            overflow-y: auto;
+        }
+
+        .focus-card {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px;
+            padding: 20px; animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card-header { font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
+        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: white; }
+        .card-desc { font-size: 13px; color: var(--text-dim); line-height: 1.6; margin-bottom: 20px; }
+
+        /* VISUALIZERS */
+        .code-box {
+            background: #020617; border: 1px solid #334155; padding: 12px; border-radius: 8px;
+            font-family: var(--font-mono); font-size: 11px; line-height: 1.6; color: #E2E8F0;
+            overflow-x: auto;
+        }
+        .k { color: #C084FC; } .s { color: #86EFAC; } .n { color: #FCA5A5; } .c { color: #64748B; font-style: italic; }
+
+        .prompt-stack { display: flex; flex-direction: column; gap: 6px; }
+        .p-block { padding: 10px 12px; border-radius: 6px; font-size: 11px; border-left: 3px solid; background: rgba(255,255,255,0.05); }
+        
+        .metric-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; color: var(--text-dim); }
+        .bar-bg { flex: 1; height: 6px; background: #334155; margin: 6px 0 12px 0; border-radius: 3px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 3px; width: 0%; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .log-area { margin-top: auto; border-top: 1px solid var(--border); padding-top: 20px; }
+        .log-entry { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); margin-bottom: 6px; display: flex; gap: 10px; align-items: center; }
+        .log-dot { width: 6px; height: 6px; border-radius: 50%; }
+        
+        .phase-label { font-size: 10px; font-weight: 800; text-transform: uppercase; fill: #64748B; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="brand">
+        <div class="brand-dot"></div>
+        NeuroDoc: RAG OS 
+    </div>
+    
+    <div class="timeline">
+        <div class="step-dot active" data-p="1" id="t-1">1. Ingest</div>
+        <div class="step-dot" data-p="2" id="t-2">2. Index</div>
+        <div class="step-dot" data-p="3" id="t-3">3. Cold Q</div>
+        <div class="step-dot" data-p="4" id="t-4">4. Generate</div>
+        <div class="step-dot" data-p="5" id="t-5">5. Warm Q</div>
+        <div class="step-dot" data-p="6" id="t-6">6. Optimize</div>
+    </div>
+
+    <div class="controls">
+        <button onclick="prevStep()" id="prevBtn" disabled>&larr; Back</button>
+        <button onclick="nextStep()" id="nextBtn" class="primary">Start Demo &rarr;</button>
+    </div>
+</header>
+
+<main>
+    <div class="diagram-container">
+        <svg viewBox="0 0 800 650">
+            <defs>
+                <marker id="arrow-1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#3B82F6"/></marker>
+                <marker id="arrow-2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8B5CF6"/></marker>
+                <marker id="arrow-3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10B981"/></marker>
+                <marker id="arrow-4" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#F59E0B"/></marker>
+                <marker id="arrow-5" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#EC4899"/></marker>
+                <marker id="arrow-6" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#06B6D4"/></marker>
+            </defs>
+
+            <text x="30" y="30" class="phase-label">PHASE 1 & 2: INGESTION & INDEXING</text>
+            <rect x="20" y="40" width="760" height="120" rx="8" fill="none" stroke="#334155" stroke-dasharray="4"/>
+
+            <text x="30" y="190" class="phase-label">PHASE 3 & 4: RETRIEVAL & GENERATION</text>
+            <rect x="20" y="200" width="760" height="200" rx="8" fill="none" stroke="#334155" stroke-dasharray="4"/>
+
+            <text x="30" y="430" class="phase-label">PHASE 5 & 6: STATE & OPTIMIZATION</text>
+            <rect x="20" y="440" width="760" height="120" rx="8" fill="none" stroke="#334155" stroke-dasharray="4"/>
+
+            <g id="n-file" class="node" transform="translate(50, 80)"><rect width="70" height="40"/><text x="35" y="25">PDF</text></g>
+            <g id="n-proc" class="node" transform="translate(180, 80)"><rect width="90" height="40"/><text x="45" y="25">Processor</text></g>
+            <g id="n-embed" class="node" transform="translate(330, 80)"><rect width="100" height="40"/><text x="50" y="25">Embedder</text></g>
+            <g id="n-db" class="node" transform="translate(500, 80)"><rect width="80" height="40"/><text x="40" y="25">FAISS/BM25</text></g>
+            <g id="n-disk" class="node" transform="translate(650, 80)"><rect width="70" height="40"/><text x="35" y="25">Disk</text></g>
+
+            <g id="n-user" class="node" transform="translate(50, 280)"><rect width="70" height="40"/><text x="35" y="25">User</text></g>
+            <g id="n-retr" class="node" transform="translate(180, 280)"><rect width="90" height="40"/><text x="45" y="25">Retriever</text></g>
+            <g id="n-rank" class="node" transform="translate(330, 280)"><rect width="100" height="40"/><text x="50" y="25">Reranker</text></g>
+            <g id="n-gen" class="node" transform="translate(500, 280)"><rect width="80" height="40"/><text x="40" y="25">Generator</text></g>
+            <g id="n-llm" class="node" transform="translate(650, 280)"><rect width="70" height="40"/><text x="35" y="25">LLM</text></g>
+
+            <g id="n-mem" class="node" transform="translate(180, 480)"><rect width="90" height="40"/><text x="45" y="25">Session</text></g>
+            <g id="n-perf" class="node" transform="translate(330, 480)"><rect width="100" height="40"/><text x="50" y="25">Perf Monitor</text></g>
+            <g id="n-opt" class="node" transform="translate(500, 480)"><rect width="80" height="40"/><text x="40" y="25">Optimizer</text></g>
+
+            <path id="p-p1-1" d="M120,100 L180,100" class="path"/>
+            <path id="p-p1-2" d="M270,100 L330,100" class="path"/>
+            <path id="p-p2-1" d="M430,100 L500,100" class="path"/>
+            <path id="p-p2-2" d="M580,100 L650,100" class="path"/>
+            
+            <path id="p-p3-1" d="M120,300 L180,300" class="path"/> <path id="p-p3-2" d="M225,280 L225,160 L540,160 L540,120" class="path" style="stroke-dasharray: 4;"/> <path id="p-p3-3" d="M270,300 L330,300" class="path"/> <path id="p-p4-1" d="M430,300 L500,300" class="path"/> <path id="p-p4-2" d="M580,300 L650,300" class="path"/> <path id="p-p4-3" d="M685,320 L685,360 L85,360 L85,320" class="path" style="stroke-dasharray: 4; opacity: 0.5"/> <path id="p-p5-1" d="M540,320 L540,400 L225,400 L225,480" class="path" style="stroke-dasharray: 4;"/> <path id="p-p5-2" d="M225,480 L225,320" class="path" style="stroke-dasharray: 4;"/> <path id="p-p6-1" d="M540,320 L540,440 L380,440 L380,480" class="path" style="stroke-dasharray: 4;"/> <path id="p-p6-2" d="M430,500 L500,500" class="path"/> <path id="p-p6-3" d="M540,520 L540,580 L685,580 L685,120" class="path" style="stroke-dasharray: 4; opacity: 0.5"/> </svg>
+    </div>
+
+    <div class="sidebar">
+        <div id="dynamic-card">
+            </div>
+        <div class="log-area" id="log-container"></div>
+    </div>
+</main>
+
+<script>
+    // --- STORY DATA (20 Detailed Steps) ---
+    const story = [
+        // PHASE 1: INGEST
+        {
+            phase: 1, title: "1. Client Upload",
+            desc: "User uploads a technical PDF: <code>transformer_architecture.pdf</code> via the <code>/upload</code> endpoint. The API generates a unique session ID.",
+            nodes: ["n-client", "n-file"], path: "p-p1-1",
+            type: "code", data: { file: "transformer_architecture.pdf", size: "4.5 MB", session_id: "sess_892a", status: "uploading" }
+        },
+        {
+            phase: 1, title: "2. Validation",
+            desc: "<code>dependencies.py</code> runs validation checks. It confirms the file type is PDF and size is within the 10MB limit.",
+            nodes: ["n-file", "n-proc"], path: "p-p1-1",
+            type: "code", data: { validation: "FileValidator.validate()", type_check: "PASS (.pdf)", size_check: "PASS (<10MB)" }
+        },
+        {
+            phase: 1, title: "3. Extraction",
+            desc: "<code>DocumentProcessor</code> uses <code>pdfplumber</code> to extract text. It falls back to OCR if text extraction yields low confidence.",
+            nodes: ["n-proc"], path: null,
+            type: "code", data: { method: "pdfplumber", text_len: 45000, pages: 12, quality: "High (0.98)" }
+        },
+        {
+            phase: 1, title: "4. Chunking",
+            desc: "Text is split into 1000-character chunks with 200-character overlap using <code>RecursiveCharacterSplitter</code>.",
+            nodes: ["n-proc", "n-embed"], path: "p-p1-2",
+            type: "code", data: { strategy: "recursive", chunk_size: 1000, overlap: 200, total_chunks: 128 }
+        },
+
+        // PHASE 2: INDEX
+        {
+            phase: 2, title: "5. Embedding Generation",
+            desc: "<code>EmbeddingGenerator</code> sends chunks to the local <code>all-MiniLM-L6-v2</code> model to create 384-dimensional vectors.",
+            nodes: ["n-embed"], path: "p-p2-1",
+            type: "code", data: { model: "all-MiniLM-L6-v2", batch_size: 32, device: "cpu", dims: 384 }
+        },
+        {
+            phase: 2, title: "6. Index Creation",
+            desc: "Vectors are added to <code>FAISS</code> (Dense Index) for semantic search. Keywords are added to <code>BM25</code> (Sparse Index).",
+            nodes: ["n-embed", "n-db"], path: "p-p2-2",
+            type: "matrix", data: [
+                { label: "Dense Index (FAISS)", val: 100, color: "#8B5CF6" },
+                { label: "Sparse Index (BM25)", val: 100, color: "#8B5CF6" }
+            ]
+        },
+        {
+            phase: 2, title: "7. Persistence",
+            desc: "Indices and metadata are serialized to disk (`faiss_index.bin`) so they can be loaded quickly for future queries.",
+            nodes: ["n-db", "n-disk"], path: "p-p2-2",
+            type: "code", data: { file_1: "faiss_index.bin", file_2: "bm25_index.pkl", location: "data/vector_store/" }
+        },
+
+        // PHASE 3: RETRIEVE (COLD)
+        {
+            phase: 3, title: "8. Cold Query",
+            desc: "User asks: <em>'How does self-attention calculate weights?'</em>. No history exists yet.",
+            nodes: ["n-user", "n-retr"], path: "p-p3-1",
+            type: "code", data: { query: "How does self-attention calculate weights?", type: "cold_start", history: "None" }
+        },
+        {
+            phase: 3, title: "9. Hybrid Search",
+            desc: "<code>HybridRetriever</code> queries both FAISS (semantic concepts) and BM25 (exact keywords like 'weights').",
+            nodes: ["n-retr", "n-db"], path: "p-p3-2",
+            type: "matrix", data: [
+                { label: "Vector Score (Semantic)", val: 85, color: "#10B981" },
+                { label: "BM25 Score (Keyword)", val: 60, color: "#64748B" }
+            ]
+        },
+        {
+            phase: 3, title: "10. Reranking",
+            desc: "<code>AdvancedReranker</code> uses a Cross-Encoder to re-score the top 10 results, boosting the most relevant chunk.",
+            nodes: ["n-retr", "n-rank"], path: "p-p3-3",
+            type: "code", data: { input_docs: 10, output_docs: 3, reranker: "ms-marco-MiniLM-L-6-v2", top_score: 0.94 }
+        },
+
+        // PHASE 4: GENERATE
+        {
+            phase: 4, title: "11. Prompt Assembly",
+            desc: "<code>ResponseGenerator</code> constructs a prompt combining System Instructions, Retrieved Context, and User Query.",
+            nodes: ["n-rank", "n-gen"], path: "p-p4-1",
+            type: "prompt", data: {
+                sys: "You are NeuroDoc, an AI expert...",
+                ctx: "Chunk 42: Attention(Q, K, V) = softmax(QK^T / sqrt(dk))V...",
+                usr: "How does self-attention calculate weights?"
+            }
+        },
+        {
+            phase: 4, title: "12. LLM Inference",
+            desc: "The prompt is sent to the local <code>Gemma 3</code> model via <code>OllamaClient</code>. The response is streamed back.",
+            nodes: ["n-gen", "n-llm"], path: "p-p4-2",
+            type: "stream", data: { text: "Self-attention computes weights by taking the dot product of the Query (Q) and Key (K) matrices..." }
+        },
+        {
+            phase: 4, title: "13. Citation & Response",
+            desc: "<code>CitationManager</code> maps the answer back to Chunk 42 and returns the final response to the user.",
+            nodes: ["n-llm", "n-gen", "n-user"], path: "p-p4-3",
+            type: "code", data: { answer: "Self-attention computes weights...", citations: ["doc_1_chunk_42"], confidence: 0.95 }
+        },
+
+        // PHASE 5: MEMORY (WARM)
+        {
+            phase: 5, title: "14. Save Turn",
+            desc: "<code>SessionManager</code> saves the Q&A pair to <code>sess_892a.json</code> for context in future turns.",
+            nodes: ["n-gen", "n-mem"], path: "p-p5-1",
+            type: "code", data: { action: "save_turn", turn_id: "t_1", file: "sessions/sess_892a.json" }
+        },
+        {
+            phase: 5, title: "15. Follow-up Query",
+            desc: "User asks: <em>'Why is <strong>it</strong> computationally expensive?'</em>. The system must resolve 'it'.",
+            nodes: ["n-user", "n-mem"], path: null,
+            type: "code", data: { query: "Why is it computationally expensive?", issue: "Ambiguous entity 'it'" }
+        },
+        {
+            phase: 5, title: "16. Coreference Resolution",
+            desc: "Using history, the system rewrites the query to: <em>'Why is <strong>self-attention</strong> computationally expensive?'</em>.",
+            nodes: ["n-mem", "n-retr"], path: "p-p5-2",
+            type: "code", data: { resolved_query: "Why is [self-attention] computationally expensive?", history_used: true }
+        },
+
+        // PHASE 6: OPTIMIZE
+        {
+            phase: 6, title: "17. New Retrieval",
+            desc: "Retriever fetches new chunks related to 'complexity' and 'O(n^2)' using the resolved query.",
+            nodes: ["n-retr", "n-db"], path: "p-p3-2",
+            type: "code", data: { query: "self-attention computational complexity", new_chunk: "Chunk 88 (Complexity Analysis)" }
+        },
+        {
+            phase: 6, title: "18. Metrics Logging",
+            desc: "<code>PerformanceMonitor</code> records latency. It notices this follow-up query took longer than expected.",
+            nodes: ["n-gen", "n-perf"], path: "p-p6-1",
+            type: "matrix", data: [
+                { label: "Latency (ms)", val: 95, color: "#F59E0B" }, /* High */
+                { label: "Token Usage", val: 40, color: "#06B6D4" }
+            ]
+        },
+        {
+            phase: 6, title: "19. Optimization",
+            desc: "<code>LatencyOptimizer</code> triggers. It reduces <code>top_k</code> from 10 to 5 to speed up future reranking.",
+            nodes: ["n-perf", "n-opt"], path: "p-p6-2",
+            type: "code", data: { alert: "Latency > 200ms", action: "tune_parameters", param: "top_k", old: 10, new: 5 }
+        },
+        {
+            phase: 6, title: "20. Cleanup",
+            desc: "Session ends. <code>SessionManager</code> cleans up temporary vector files to free disk space.",
+            nodes: ["n-opt", "n-disk"], path: "p-p6-3",
+            type: "code", data: { action: "delete_session", target: "sess_892a", freed: "15 MB" }
+        }
+    ];
+
+    let stepIndex = -1;
+
+    function nextStep() {
+        if (stepIndex >= story.length - 1) return;
+        stepIndex++;
+        render(story[stepIndex]);
+        updateButtons();
+    }
+
+    function prevStep() {
+        if (stepIndex <= 0) return;
+        stepIndex--;
+        render(story[stepIndex]);
+        updateButtons();
+    }
+
+    function updateButtons() {
+        document.getElementById("prevBtn").disabled = stepIndex <= 0;
+        const nextBtn = document.getElementById("nextBtn");
+        
+        if (stepIndex === story.length - 1) {
+            nextBtn.innerText = "Reset Demo";
+            nextBtn.onclick = () => location.reload();
+        } else {
+            nextBtn.innerText = "Next Step \u2192";
+            nextBtn.onclick = nextStep;
+        }
+    }
+
+    function render(s) {
+        // 1. Timeline
+        document.querySelectorAll('.step-dot').forEach((el, i) => {
+            el.classList.remove('active');
+            // Logic to keep timeline illuminated progressively
+            // We use the data-p attribute to match the current phase
+            if (parseInt(el.getAttribute('data-p')) <= s.phase) {
+                el.classList.add('active');
+            }
+        });
+
+        // 2. Diagram Update
+        // Clear all active classes
+        document.querySelectorAll('.node, .path').forEach(el => {
+            el.className.baseVal = el.className.baseVal.replace(/active-\d/g, '').trim();
+            el.classList.remove('active');
+        });
+
+        // Add active class for current phase color
+        s.nodes.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.classList.add(`active-${s.phase}`);
+        });
+
+        if (s.path) {
+            const p = document.getElementById(s.path);
+            if(p) {
+                p.classList.add('active');
+                p.classList.add(`active-${s.phase}`);
+                
+                // Handle complex multi-path scenarios logic
+                if (s.path === 'p-p3-2') { 
+                    // If hitting DB, also light up return paths roughly if needed, 
+                    // but for simplicity we focus on the primary flow arrow.
+                }
+            }
+        }
+
+        // 3. Log
+        const log = document.createElement('div');
+        log.className = 'log-entry';
+        const colorMap = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EC4899', '#06B6D4'];
+        log.innerHTML = `
+            <div class="log-dot" style="background:${colorMap[s.phase-1]}"></div>
+            <div style="opacity:0.6; min-width:45px">${new Date().toLocaleTimeString('en-US',{hour12:false, minute:'2-digit', second:'2-digit'})}</div>
+            <div>${s.title}</div>
+        `;
+        document.getElementById('log-container').prepend(log);
+
+        // 4. Card Content
+        const card = document.getElementById('dynamic-card');
+        const phases = ['Ingestion', 'Indexing', 'Retrieval', 'Generation', 'Memory', 'Optimization'];
+        const phaseColor = colorMap[s.phase-1];
+        
+        let html = `
+            <div class="focus-card" style="border-left: 3px solid ${phaseColor}">
+                <div class="card-header" style="color:${phaseColor}">PHASE ${s.phase}: ${phases[s.phase-1]}</div>
+                <div class="card-title">${s.title}</div>
+                <div class="card-desc">${s.desc}</div>
+        `;
+
+        if (s.type === 'code') {
+            html += `<div class="code-box">`;
+            for (const [k, v] of Object.entries(s.data)) {
+                html += `<div><span class="k">"${k}"</span>: <span class="s">"${v}"</span></div>`;
+            }
+            html += `</div>`;
+        } else if (s.type === 'matrix') {
+            html += `<div style="margin-top:12px">`;
+            s.data.forEach(d => {
+                html += `
+                    <div class="metric-row"><span>${d.label}</span><span>${d.val}%</span></div>
+                    <div class="bar-bg"><div class="bar-fill" style="width:${d.val}%; background:${d.color}"></div></div>
+                `;
+            });
+            html += `</div>`;
+        } else if (s.type === 'prompt') {
+            html += `
+                <div class="prompt-stack">
+                    <div class="p-block" style="border-color:#F59E0B; color:#FCD34D"><strong>SYS:</strong> ${s.data.sys}</div>
+                    <div class="p-block" style="border-color:#64748B; color:#94A3B8">${s.data.ctx}</div>
+                    <div class="p-block" style="border-color:#3B82F6; color:#60A5FA"><strong>USER:</strong> ${s.data.usr}</div>
+                </div>
+            `;
+        } else if (s.type === 'stream') {
+            html += `<div class="code-box" style="color:#10B981; border-color:#10B981">${s.data.text}<span style="animation:blink 1s infinite">|</span></div>`;
+        }
+
+        html += `</div>`;
+        card.innerHTML = html;
+    }
+</script>
+<style>@keyframes blink { 50% { opacity: 0; } }</style>
+</body>
+</html>
